@@ -20,7 +20,7 @@ ser_cmd  =      [USB_HEADER,CMD_FLAGS_READ,SEQ_ZERO,0x02,0x00,0x33,0x02]
 led_test_start =[USB_HEADER,CMD_FLAGS_WRITE,SEQ_ZERO,0x03,0x00,0x0B,0x01,0x01]
 led_test_stop  =[USB_HEADER,CMD_FLAGS_WRITE,SEQ_ZERO,0x03,0x00,0x0B,0x01,0x00]
 start_scan     =[USB_HEADER,CMD_FLAGS_WRITE,SEQ_ZERO,0x03,0x00,0x18,0x02,0x00]
- 
+device_status  =[USB_HEADER,CMD_FLAGS_READ,SEQ_ZERO,0x02,0x00,0x03,0x04] 
 read_file_size =[USB_HEADER,CMD_FLAGS_READ,SEQ_ZERO,0x03,0x00,0x2D,0x00,0x00]
 read_scan_data =[USB_HEADER,CMD_FLAGS_READ,SEQ_ZERO,0x02,0x00,0x2E,0x00]
 
@@ -33,6 +33,14 @@ def send_info(cmd,ret_len):
      h.write(''.join(map(chr,cmd)))
      process_data(ret_len)
 
+def extract_flags(flag_byte):
+    err = (ord(flag_byte) & 0x30) >> 4
+    rw =  (ord(flag_byte) & 0x80) >> 7
+    rdy = (ord(flag_byte) & 0x40) >> 6
+    print("R/W: " + str(rw)  +
+          " Rdy: " + str(rdy) +
+          " Err: " + str(err) )
+    return rw
 
 def process_data(ret_len):
      length = 0
@@ -52,13 +60,7 @@ def process_data(ret_len):
              if (i !=0 and rw == 0) or burst == True:         
                  print(hex(ord(data[i])))
              elif i == 0:
-                 err = (ord(data[i]) & 0x30) >> 4
-                 rw =  (ord(data[i]) & 0x80) >> 7
-                 rdy = (ord(data[i]) & 0x40) >> 6
-                 
-                 print("R/W: " + str(rw)  +
-                       " Rdy: " + str(rdy) +
-                       " Err: " + str(err) )
+                 rw = extract_flags(data[i])
              else:                             # read  transaction
                  if i == 1:
     	             seq_no = ord(data[i])
@@ -98,9 +100,10 @@ send_info(led_test_stop,2)                        # stop led test
 print ("Test #3\n")
 send_info(start_scan,1)
 time.sleep(5)
-
 print ("Test #4\n")
+send_info(device_status,8)
+print ("Test #5\n")
 send_info(read_file_size,8)
-print("Test #5\n")
+print("Test #6\n")
 send_info(read_scan_data,512)
 
