@@ -21,7 +21,7 @@ def setup(VID,PID):
 def send_info(cmd_name,cmd,ret_len):
      h.write(''.join(map(chr,cmd)))
      data = h.read(ret_len)
-     process_data(data)
+     process_data(data,cmd_name)
 
 def extract_flags(flag_byte):
     err = (ord(flag_byte) & 0x30) >> 4
@@ -32,20 +32,27 @@ def extract_flags(flag_byte):
           " Err: " + str(err) )
     return rw
 
-def process_data(data):
+def process_data(data,cmd_name):
     rw = extract_flags(data[0])
 
-    if rw == 0 and len(data) > 1:
-        print(hex(ord(data)))
+    if rw == 0:
+        for i in range(1,len(data)):
+            print(hex(ord(data[i])))
     else:                      # read  transaction
         seq_no = ord(data[1])
         print("Seq_no: " + str(seq_no))
         length = ord(data[2]) + (ord(data[3]) << 8)
         print("Packet_Len: " + str(length))
-        read_data_process(data[4:])
+        read_data_process(data[4:],cmd_name)
 
 
+def read_data_process(data,cmd_name):
 
+    if cmd_name == cmd.RED_FSZE:
+        for i in len(data):
+            read_file_size += ord(data[i]) << (i*8)
+    elif cmd_name == cmd.GET_TDAT:
+                 
 
 
 
