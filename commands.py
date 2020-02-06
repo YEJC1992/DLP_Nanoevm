@@ -40,7 +40,7 @@ class cmd(Enum):
 CMD_PRF_CSUM = [cmd.PRF_CSUM, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x15, 0x00, 4+4]        # Perform file checksum
 CMD_WRT_DATA = [cmd.WRT_DATA, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x02, 0x00, 0x25, 0x00, 0+1]        # Write file data
 CMD_RED_FSZE = [cmd.RED_FSZE, USB_HDR, FLG_READ,  FLG_SEQ0, 0x03, 0x00, 0x2D, 0x00, 4+4]        # Read file size
-CMD_RED_FDAT = [cmd.RED_FDAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x2E, 0x00, 0+4]        # Read file data
+CMD_RED_FDAT = [cmd.RED_FDAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x2E, 0x00, 0]         # Read file data
 CMD_LED_TEST = [cmd.LED_TEST, USB_HDR, FLG_WRITE,  FLG_SEQ0, 0x03, 0x00, 0x0B, 0x01, 1+1]        # LED Test
 CMD_TIV_VERS = [cmd.TIV_VERS, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x16, 0x02,28+4]        # Read version info
 CMD_STR_SCAN = [cmd.STR_SCAN, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x18, 0x02, 0+1]        # Start scan
