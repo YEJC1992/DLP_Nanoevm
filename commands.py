@@ -22,6 +22,7 @@ def Class cmd(enum.Enum):
     SET_SCON = 11
     GET_TDAT = 12
     DEV_STAT = 13
+    LED_TEST = 14
 
 
 
@@ -40,11 +41,11 @@ CMD_PRF_CSUM = [cmd.PRF_CSUM, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x15, 0x
 CMD_WRT_DATA = [cmd.WRT_DATA, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x02, 0x00, 0x25, 0x00, 0+1]        # Write file data
 CMD_RED_FSZE = [cmd.RED_FSZE, USB_HDR, FLG_READ,  FLG_SEQ0, 0x03, 0x00, 0x2D, 0x00, 4+4]        # Read file size
 CMD_RED_FDAT = [cmd.RED_FDAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x2E, 0x00, 0+4]        # Read file data
+CMD_LED_TEST = [cmd.LED_TEST, USB_HDR, FLG_READ,  FLG_SEQ0, 0x03, 0x00, 0x0B, 0x01, 1+4]        # LED Test
 CMD_TIV_VERS = [cmd.TIV_VERS, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x16, 0x02,28+4]        # Read version info
-
 CMD_STR_SCAN = [cmd.STR_SCAN, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x18, 0x02, 0+1]        # Start scan
 CMD_SCN_STAT = [cmd.SCN_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x19, 0x02, 1+4]        # Scan status-> 0:in progress
-                                                                                            #               1:complete
+                                                                                                #               1:complete
 CMD_STR_CONF = [cmd.STR_CONF, USB_HDR, FLG_READ,  FLG_SEQ0, 0x04, 0x00, 0x20, 0x02, 0+4]        # Read stored scan configs
 CMD_NUM_CONF = [cmd.NUM_CONF, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x22, 0x02, 1+4]        # Read num of stored configs
 CMD_GET_SCON = [cmd.GET_SCON, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x23, 0x02, 1+4]        # Read active scan config

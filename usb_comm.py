@@ -52,7 +52,15 @@ def read_data_process(data,cmd_name):
         for i in len(data):
             read_file_size += ord(data[i]) << (i*8)
     elif cmd_name == cmd.GET_TDAT:
-                 
+        print("{}-{}-{}  {}:{}:{}" . format(ord(data[2]),ord(data[1]),ord(data[0]),
+                                            ord(data[4]),ord(data[5]),ord(data[6])))
+    elif cmd_name == cmd.LED_TEST:
+        if ord(data[0]) == 0:
+            print("LED TEST PASSED")
+        else:
+            print("LED TEST FAIL")                                            
+
+
 
 
 
@@ -60,4 +68,8 @@ def read_data_process(data,cmd_name):
 
 setup(VID,PID)
 
-send_info (CMD_PRF_CSUM[0], CMD_PRF_CSUM[1:7], CMD_PRF_CSUM[8])
+send_info (CMD_LED_TEST[0], CMD_LED_TEST[1:7].append(0x01), CMD_LED_TEST[8])  #start led Test
+send_info (CMD_GET_TDAT[0], CMD_GET_TDAT[1:7], CMD_GET_TDAT[8]) # Get time and date
+time.sleep(3)
+print(CMD_LED_TEST)
+send_info (CMD_LED_TEST[0], CMD_LED_TEST[1:7].append(0x00), CMD_LED_TEST[8])
