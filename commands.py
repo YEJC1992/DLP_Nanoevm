@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-import enum
+from enum import Enum
 
 
 USB_HDR    = 0x00
@@ -8,7 +8,7 @@ FLG_LEN0   = 0x00
 FLG_READ   = 0xC0   # read ready
 FLG_WRITE  = 0x40   # write ready
 
-def Class cmd(enum.Enum):
+class cmd(Enum):
     PRF_CSUM = 1
     WRT_DATA = 2
     RED_FSZE = 3
@@ -41,7 +41,7 @@ CMD_PRF_CSUM = [cmd.PRF_CSUM, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x15, 0x
 CMD_WRT_DATA = [cmd.WRT_DATA, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x02, 0x00, 0x25, 0x00, 0+1]        # Write file data
 CMD_RED_FSZE = [cmd.RED_FSZE, USB_HDR, FLG_READ,  FLG_SEQ0, 0x03, 0x00, 0x2D, 0x00, 4+4]        # Read file size
 CMD_RED_FDAT = [cmd.RED_FDAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x2E, 0x00, 0+4]        # Read file data
-CMD_LED_TEST = [cmd.LED_TEST, USB_HDR, FLG_READ,  FLG_SEQ0, 0x03, 0x00, 0x0B, 0x01, 1+4]        # LED Test
+CMD_LED_TEST = [cmd.LED_TEST, USB_HDR, FLG_WRITE,  FLG_SEQ0, 0x03, 0x00, 0x0B, 0x01, 1+1]        # LED Test
 CMD_TIV_VERS = [cmd.TIV_VERS, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x16, 0x02,28+4]        # Read version info
 CMD_STR_SCAN = [cmd.STR_SCAN, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x18, 0x02, 0+1]        # Start scan
 CMD_SCN_STAT = [cmd.SCN_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x19, 0x02, 1+4]        # Scan status-> 0:in progress

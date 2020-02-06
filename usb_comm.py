@@ -13,9 +13,7 @@ TIMEOUT = 1000
 def setup(VID,PID):
     device_list = hid.enumerate(VID,PID)
     print (device_list)
-    global  h = hid.Device(VID,PID)
-    print("Product:  " + h.product +" Device:  " + h.manufacturer)
-    print("Serial Number:  " + str(h.serial))
+    
 
 
 def send_info(cmd_name,cmd,ret_len):
@@ -35,9 +33,8 @@ def extract_flags(flag_byte):
 def process_data(data,cmd_name):
     rw = extract_flags(data[0])
 
-    if rw == 0:
-        for i in range(1,len(data)):
-            print(hex(ord(data[i])))
+    if rw == 0 and len(data)>1:
+        read_data_process(data[1:],cmd_name)
     else:                      # read  transaction
         seq_no = ord(data[1])
         print("Seq_no: " + str(seq_no))
@@ -46,19 +43,19 @@ def process_data(data,cmd_name):
         read_data_process(data[4:],cmd_name)
 
 
-def read_data_process(data,cmd_name):
+def read_data_process(rd_data,cmd_name):
 
     if cmd_name == cmd.RED_FSZE:
-        for i in len(data):
-            read_file_size += ord(data[i]) << (i*8)
+        for i in len(rd_data):
+            read_file_size += ord(rd_data[i]) << (i*8)
     elif cmd_name == cmd.GET_TDAT:
-        print("{}-{}-{}  {}:{}:{}" . format(ord(data[2]),ord(data[1]),ord(data[0]),
-                                            ord(data[4]),ord(data[5]),ord(data[6])))
+        print("{}-{}-{}  {}:{}:{}\n" . format(ord(rd_data[2]),ord(rd_data[1]),ord(rd_data[0]),
+                                            ord(rd_data[4]),ord(rd_data[5]),ord(rd_data[6])))
     elif cmd_name == cmd.LED_TEST:
-        if ord(data[0]) == 0:
-            print("LED TEST PASSED")
+        if ord(rd_data[0]) == 0:
+            print("LED TEST PASSED\n")
         else:
-            print("LED TEST FAIL")                                            
+            print("LED TEST FAIL\n")                                            
 
 
 
@@ -68,8 +65,17 @@ def read_data_process(data,cmd_name):
 
 setup(VID,PID)
 
-send_info (CMD_LED_TEST[0], CMD_LED_TEST[1:7].append(0x01), CMD_LED_TEST[8])  #start led Test
-send_info (CMD_GET_TDAT[0], CMD_GET_TDAT[1:7], CMD_GET_TDAT[8]) # Get time and date
+h = hid.Device(VID,PID)
+print("Product:  " + h.product +" Device:  " + h.manufacturer)
+print("Serial Number:  " + str(h.serial) + "\n")
+
+led_start = CMD_LED_TEST[1:8]
+led_start.append(0x01)
+send_info (CMD_LED_TEST[0], led_start, CMD_LED_TEST[8])  #start led Test
+
+send_info (CMD_GET_TDAT[0], CMD_GET_TDAT[1:8], CMD_GET_TDAT[8]) # Get time and date
 time.sleep(3)
-print(CMD_LED_TEST)
-send_info (CMD_LED_TEST[0], CMD_LED_TEST[1:7].append(0x00), CMD_LED_TEST[8])
+
+led_stop = CMD_LED_TEST[1:8]
+led_stop.append(0x00)
+send_info (CMD_LED_TEST[0], led_stop, CMD_LED_TEST[8]) # Stop led test
