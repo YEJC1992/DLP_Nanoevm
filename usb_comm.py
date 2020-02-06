@@ -10,6 +10,7 @@ VID = 0x0451
 PID = 0x4200
 TIMEOUT = 1000
 READ_FILE_SIZE = 0
+FILE = []
 
 def setup(VID,PID):
     device_list = hid.enumerate(VID,PID)
@@ -52,6 +53,7 @@ def read_data_process(rd_data,cmd_name):
         global READ_FILE_SIZE
         size = 0
         for i in range(len(rd_data)):
+            print(hex(ord(rd_data[i])))
             size += ord(rd_data[i]) << (i*8)
         READ_FILE_SIZE = size
         print("READ FILE SIZE: " + str(READ_FILE_SIZE) + "\n")
@@ -59,6 +61,7 @@ def read_data_process(rd_data,cmd_name):
     elif cmd_name == cmd.RED_FDAT:
         for i in rd_data: 
             print(hex(ord(i)))
+
     elif cmd_name == cmd.GET_TDAT:
         print("{}-{}-{}  {}:{}:{}\n" . format(ord(rd_data[2]),ord(rd_data[1]),ord(rd_data[0]),
                                             ord(rd_data[4]),ord(rd_data[5]),ord(rd_data[6])))
@@ -73,13 +76,29 @@ def read_data_process(rd_data,cmd_name):
         print("ACTIVE SCAN CONFIG: " + str(ord(rd_data[0])) + "\n")
     elif cmd_name == cmd.DEV_STAT:
         print("Device Status: "+hex(ord(rd_data[0])) + "\n")
+    elif cmd_name == cmd.SCN_TIME:
+        time = 0
+        for i in range(len(rd_data)):
+           time += ord(rd_data[i]) << (i*8) 
+        print("SCAN_TIME: " + str(time)+ "\n")
                                       
 
 
 
-
-
-
+def read_burst_data(cmd_name,cmd,ret_len):
+    global FILE 
+    read_len = ret_len
+    while len(FILE) < ret_len:
+        h.write(''.join(map(chr,cmd))) 
+        if read_len > 64:    
+            data = h.read(64)
+            read_len -= 64
+        else:
+            data = h.read(read_len)
+            read_len = 0
+        FILE.extend(data)
+   
+    print(len(FILE))
 
 setup(VID,PID)
 
@@ -92,7 +111,7 @@ led_start.append(0x01)
 send_info (CMD_LED_TEST[0], led_start, CMD_LED_TEST[8])  #start led Test
 
 send_info (CMD_GET_TDAT[0], CMD_GET_TDAT[1:8], CMD_GET_TDAT[8]) # Get time and date
-time.sleep(3)
+#time.sleep(3)
 
 led_stop = CMD_LED_TEST[1:8]
 led_stop.append(0x00)
@@ -107,11 +126,13 @@ send_info (CMD_SET_SCON[0], set_scan_config, CMD_SET_SCON[8])
 
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
+send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])
+
 start_scan = CMD_STR_SCAN[1:8]
 start_scan.append(0x00)
 send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])  # Start Scan
 
-time.sleep(5)
+time.sleep(3)
 
 send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8]) # Get Device status 
 
@@ -119,5 +140,8 @@ send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8]) # Get Device sta
 read_file_size = CMD_RED_FSZE[1:8]
 read_file_size.append(0x00)   # get file size of scan data
 send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])   # Read scna file size
-send_info (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4) # Read scan data
+
+
+read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4) # Read scan data
+
 
