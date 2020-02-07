@@ -97,7 +97,9 @@ def read_burst_data(cmd_name,cmd,ret_len):
             data = h.read(read_len)
             read_len = 0
         FILE.extend(data)
-   
+    f = open("scanresults.txt","w")
+    f.write("\n".join(FILE))
+    f.close()
     print(len(FILE))
 
 setup(VID,PID)
