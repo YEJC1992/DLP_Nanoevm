@@ -6,6 +6,8 @@ from ctypes import *
 from commands import *
 from scan import *
 import matplotlib.pyplot as plt
+import math
+
 
 VID = 0x0451
 PID = 0x4200
@@ -103,16 +105,15 @@ def read_burst_data(cmd_name,cmd,ret_len):
             data = h.read(read_len)
             read_len = 0
         FILE.extend(data)
-    FILE.pop(0)
-    FILE.pop(1)
-    FILE.pop(2)
-    FILE.pop(3)
+    process_data(FILE[0:4],cmd_name)
+    for i in range(4):
+        FILE.pop(0)
     f = open("scanresults.txt","w")
     for i in FILE:
         f.write(hex(ord(i)))
         f.write("\n")
     f.close()
-    print(len(FILE))
+    print("Data Fetched: " +str(len(FILE)))
 
 
 
@@ -135,6 +136,10 @@ led_stop = CMD_LED_TEST[1:8]
 led_stop.append(0x00)
 send_info (CMD_LED_TEST[0], led_stop, CMD_LED_TEST[8]) # Stop led test
 
+
+
+# Scan Data
+
 send_info (CMD_NUM_CONF[0], CMD_NUM_CONF[1:8], CMD_NUM_CONF[8])
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
@@ -142,16 +147,10 @@ set_scan_config = CMD_SET_SCON[1:8]
 set_scan_config.append(0x00)             # Select config 1
 send_info (CMD_SET_SCON[0], set_scan_config, CMD_SET_SCON[8])
 
-"""get_store_config = CMD_STR_CONF[1:8]
-get_store_config.append(0x01)
-get_store_config.append(0x7C)
-read_burst_data (CMD_STR_CONF[0],get_store_config,128)
-"""
-
-
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
 send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])
+
 
 start_scan = CMD_STR_SCAN[1:8]
 start_scan.append(0x00)
@@ -161,24 +160,31 @@ time.sleep(3)
 
 send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8]) # Get Device status 
 
-
 read_file_size = CMD_RED_FSZE[1:8]
 read_file_size.append(0x00)   # get file size of scan data
-send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])   # Read scna file size
-
+print(read_file_size)
+send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])   # Read scan file size
 
 read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4) # Read scan data
 
-
 results = scan_interpret(FILE)
+
+time.sleep(2)
+
+
+
 
 x = results["wavelength"]
 y = results["intensity"]
+
+
 
 plt.plot(x,y)
 
 plt.xlabel("wavelength")
 plt.ylabel("intensity")
+
+
 
 plt.show()
 
