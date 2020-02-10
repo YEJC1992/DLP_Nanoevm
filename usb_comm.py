@@ -4,7 +4,8 @@ import hid
 import time
 from ctypes import *
 from commands import *
-
+from scan import *
+import matplotlib.pyplot as plt
 
 VID = 0x0451
 PID = 0x4200
@@ -53,29 +54,34 @@ def read_data_process(rd_data,cmd_name):
         global READ_FILE_SIZE
         size = 0
         for i in range(len(rd_data)):
-            print(hex(ord(rd_data[i])))
             size += ord(rd_data[i]) << (i*8)
         READ_FILE_SIZE = size
         print("READ FILE SIZE: " + str(READ_FILE_SIZE) + "\n")
     
-    elif cmd_name == cmd.RED_FDAT:
+    elif cmd_name == cmd.STR_CONF:
         for i in rd_data: 
             print(hex(ord(i)))
 
     elif cmd_name == cmd.GET_TDAT:
-        print("{}-{}-{}  {}:{}:{}\n" . format(ord(rd_data[2]),ord(rd_data[1]),ord(rd_data[0]),
-                                            ord(rd_data[4]),ord(rd_data[5]),ord(rd_data[6])))
+        print("{}-{}-{}  {}:{}:{}\n".format(ord(rd_data[2]),ord(rd_data[1]),
+                                            ord(rd_data[0]),ord(rd_data[4]),
+                                            ord(rd_data[5]),ord(rd_data[6])))
+
     elif cmd_name == cmd.LED_TEST:
         if ord(rd_data[0]) == 0:
             print("LED TEST PASSED\n")
         else:
             print("LED TEST FAIL\n")   
+
     elif cmd_name == cmd.NUM_CONF:
         print("NUM OF STORED SCAN CONFIGS: " + str(ord(rd_data[0])) + "\n")
+
     elif cmd_name == cmd.GET_SCON:
         print("ACTIVE SCAN CONFIG: " + str(ord(rd_data[0])) + "\n")
+
     elif cmd_name == cmd.DEV_STAT:
         print("Device Status: "+hex(ord(rd_data[0])) + "\n")
+
     elif cmd_name == cmd.SCN_TIME:
         time = 0
         for i in range(len(rd_data)):
@@ -97,10 +103,20 @@ def read_burst_data(cmd_name,cmd,ret_len):
             data = h.read(read_len)
             read_len = 0
         FILE.extend(data)
+    FILE.pop(0)
+    FILE.pop(1)
+    FILE.pop(2)
+    FILE.pop(3)
     f = open("scanresults.txt","w")
-    f.write("\n".join(FILE))
+    for i in FILE:
+        f.write(hex(ord(i)))
+        f.write("\n")
     f.close()
     print(len(FILE))
+
+
+
+
 
 setup(VID,PID)
 
@@ -123,8 +139,15 @@ send_info (CMD_NUM_CONF[0], CMD_NUM_CONF[1:8], CMD_NUM_CONF[8])
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
 set_scan_config = CMD_SET_SCON[1:8]
-set_scan_config.append(0x01)             # Select config 1
+set_scan_config.append(0x00)             # Select config 1
 send_info (CMD_SET_SCON[0], set_scan_config, CMD_SET_SCON[8])
+
+"""get_store_config = CMD_STR_CONF[1:8]
+get_store_config.append(0x01)
+get_store_config.append(0x7C)
+read_burst_data (CMD_STR_CONF[0],get_store_config,128)
+"""
+
 
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
@@ -146,4 +169,16 @@ send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])   # Read scna file 
 
 read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4) # Read scan data
 
+
+results = scan_interpret(FILE)
+
+x = results["wavelength"]
+y = results["intensity"]
+
+plt.plot(x,y)
+
+plt.xlabel("wavelength")
+plt.ylabel("intensity")
+
+plt.show()
 
