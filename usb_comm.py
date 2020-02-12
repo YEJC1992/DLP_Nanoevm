@@ -32,7 +32,7 @@ def extract_flags(flag_byte):
     FLG_STATUS["ERR"] = (ord(flag_byte) & 0x30) >> 4
     FLG_STATUS["R/W"] = (ord(flag_byte) & 0x80) >> 7
     FLG_STATUS["RDY"] = (ord(flag_byte) & 0x40) >> 6
-    print(" R/W: " + str(FLG_STATUS["R/W"])  +
+    print("R/W: " + str(FLG_STATUS["R/W"]) +
           " Rdy: " + str(FLG_STATUS["RDY"]) +
           " Err: " + str(FLG_STATUS["ERR"]) )
     return FLG_STATUS
@@ -147,34 +147,33 @@ send_info (CMD_LED_TEST[0], led_stop, CMD_LED_TEST[8])
 #Send Scan Config
 
 serial_scan_config = set_config()
-serial_scan_config.insert(0,0x7C)
-serial_scan_config.insert(0,0x0)
-
 
 buf_len = len(serial_scan_config)
+
 i = 0
 j = 0
 ret_len = 0
 while buf_len != 0:
-
+    print(buf_len)
     data=[]
     data = CMD_CFG_APPY[1:8]
     data[2] = i
-    if (j+58) < len(serial_scan_config):
-        data.extend(serial_scan_config[j:j+58])
-        buf_len = buf_len - 58
+    if (j+57) < len(serial_scan_config):
+        data.extend(serial_scan_config[j:j+57])
+        buf_len = buf_len - 57
     else:
         data.extend(serial_scan_config[j:])
         buf_len = 0
         ret_len = 4+1
+    print(data)
     send_info(CMD_CFG_APPY[0], data, ret_len)
     i += 1
-    j += 58
+    j += 57
 
-
+"""
 
 # Scan Data
-"""
+
 send_info (CMD_NUM_CONF[0], CMD_NUM_CONF[1:8], CMD_NUM_CONF[8])
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
@@ -183,7 +182,6 @@ set_scan_config.append(0x00)             # Select config 1
 send_info (CMD_SET_SCON[0], set_scan_config, CMD_SET_SCON[8])
 
 send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
-
 
 """
 #Scan Time

@@ -5,20 +5,29 @@ import ctypes
 import os
 
 
-
-
-class scanConfig(ctypes.Structure):
+class scanConfigHead(ctypes.Structure):
     _fields_ = [
                 ("scan_type", ctypes.c_uint8),
                 ("scanConfigIndex", ctypes.c_uint16),
-                ("ScanConfig_serial_number", ctypes.c_char * 8),
-                ("config_name", ctypes.c_char * 40),
+                ("scanConfig_serial_number", ctypes.c_char * 8),
+                ("config_name", ctypes.c_char * 40)
+               ]
+
+class scanConfigStub(ctypes.Structure):
+    _fields_ = [   
                 ("wavelength_start_nm", ctypes.c_uint16),
                 ("wavelength_end_nm", ctypes.c_uint16),
                 ("width_px", ctypes.c_uint8),
                 ("num_patterns", ctypes.c_uint16),
                 ("num_repeats", ctypes.c_uint16)
                ]
+
+class scanConfig(ctypes.Structure):
+    _fields_ = [
+                ("head",scanConfigHead),
+                ("stub",scanConfigStub)
+               ]
+
 
 class calibCoeffs(ctypes.Structure):
     _fields_  = [
@@ -30,8 +39,8 @@ class slewScanSection(ctypes.Structure):
     _fields_ = [
                 ("section_scan_type",ctypes.c_uint8),
                 ("width_px", ctypes.c_uint8),
-                ("wavelenght_start_nm",  ctypes.c_uint16),
-                ("wavelenght_end_nm", ctypes.c_uint16),
+                ("wavelength_start_nm",  ctypes.c_uint16),
+                ("wavelength_end_nm", ctypes.c_uint16),
                 ("num_patterns", ctypes.c_uint16),
                 ("exposure_time", ctypes.c_uint16)
               ]
@@ -49,9 +58,14 @@ class slewScanConfigHead(ctypes.Structure):
 class slewScanConfig(ctypes.Structure):
     _fields_=[
               ("head",slewScanConfigHead),
-              ("section", slewScanSection*5)
+              ("section", slewScanSection)
              ]
 
+class slewScanConfigR(ctypes.Structure):
+    _fields_=[
+              ("head",slewScanConfigHead),
+              ("section", slewScanSection * 5)
+             ]
 
 
 class scanResults(ctypes.Structure):
@@ -77,7 +91,7 @@ class scanResults(ctypes.Structure):
                 ("black_ptrn_first", ctypes.c_uint8),
                 ("black_ptrn_period",ctypes.c_uint8),
                 ("pga",              ctypes.c_uint8),
-                ("cfg",              slewScanConfig),
+                ("cfg",              slewScanConfigR),
                 ("wavelength",       ctypes.c_double * 864),
                 ("intensity",        ctypes.c_int * 864),
                 ("length",           ctypes.c_int)
@@ -114,11 +128,6 @@ def unpack_fields(input):
 
 def scan_interpret(file):
 
-    """while 1:
-        byte = f.read(1)
-        if not byte:
-            break"""
-
     buffer =  ctypes.create_string_buffer(len(file))
   
     for counter, byte in enumerate(file):
@@ -149,38 +158,51 @@ def set_config():
     config = scanConfig()
     
     for field_name, field_type in config._fields_:
-        if field_name == "scan_type":
-            value = 0
-        elif field_name == "scanConfigIndex":
-            value = 0
-        elif field_name == "ScanConfig_serial_number":
-            value = '123456'
-        elif field_name == "config_name":
-            value = 'column2'
-        elif field_name == "wavelength_start_nm":
-            value = 900
-        elif field_name == "wavelength_end_nm":
-            value = 1700
-        elif field_name == "width_px":
-            value = 7
-        elif field_name == "num_patterns":
-            value = 0
-        elif field_name == "num_repeats":
-            value = 2
-        setattr(config,field_name,value)
+        if field_name == "head":
+            for fname, ftype in field_type._fields_:
+                if fname == "scan_type":
+                    value = 2
+                elif fname == "scanConfigIndex":
+                    value = 19
+                elif fname == "scanConfig_serial_number":
+                    value = "6110022"
+                elif fname == "config_name":
+                    value = "column 2"
+                setattr(config.head,fname,value)
+        if field_name == "stub":
+            for fname, ftype in field_type._fields_:
+                if fname == "wavelength_start_nm":
+                    value = 0x384
+                elif fname == "wavelength_end_nm":
+                    value = 0x6A4
+                elif fname == "width_px":
+                    value = 6
+                elif fname == "num_patterns":
+                    value = 228 
+                elif fname == "num_repeats":
+                    value = 6           
+                setattr(config.stub,fname,value)
 
     config_ptr = ctypes.byref(config)
+ 
+    BufSize = ctypes.c_int()
+    BufSizeptr = ctypes.byref(BufSize)
+  
+    err = dlp_nano_lib.dlpspec_get_scan_config_dump_size(config_ptr, BufSizeptr)
+    print("ERROR: " + str(err))
 
-    config_serial = ctypes.create_string_buffer(124)
+    config_serial = ctypes.create_string_buffer(BufSize.value)
     config_serial_ptr = ctypes.pointer(config_serial)
     config_len = ctypes.c_size_t(len(config_serial))
 
     err = dlp_nano_lib.dlpspec_scan_write_configuration(config_ptr, config_serial_ptr, config_len)
        
-    #print("ERROR: " + str(err))
- 
+    print("ERROR: " + str(err))
+    
+    
     serial_data = []
-    for i in range(124):
+    for i in range(BufSize.value):
         serial_data.append(ord(config_serial[i]))
+    print(serial_data)
     return serial_data     
     
