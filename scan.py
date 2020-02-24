@@ -150,7 +150,7 @@ def scan_interpret(file):
         f1.write(str(unpack[key]))
         f1.write("\n\n")
     f1.close()
-
+    return unpack
 
 def read_scan_config(data):
 

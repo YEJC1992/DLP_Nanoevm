@@ -22,12 +22,13 @@ def setup(VID,PID):
     h = hid.Device(VID,PID)
     print("Product:  " + h.product +" Device:  " + h.manufacturer)
     print("Serial Number:  " + str(h.serial) + "\n")
+    
 
 def send_info(cmd_name,cmd,ret_len):
      global h
 
      h.write(''.join(map(chr,cmd)))
-     time.sleep(0.05)
+     time.sleep(0.01)
      if ret_len != 0:
          data = h.read(ret_len)
          process_data(data,cmd_name)
@@ -96,8 +97,9 @@ def read_data_process(rd_data,cmd_name):
         print("ACTIVE SCAN CONFIG: " + str(ord(rd_data[0])) + "\n")
 
     elif cmd_name == cmd.DEV_STAT:
-        print("Device Status: "+hex(ord(rd_data[0])) + "\n")
-        return ord(rd_data[0])
+        stat = ord(rd_data[0])
+        print("Device Status: "+str(stat) + "\n")
+        return stat
 
     elif cmd_name == cmd.SCN_TIME:
         time = 0
@@ -107,6 +109,10 @@ def read_data_process(rd_data,cmd_name):
 
     elif cmd_name == cmd.INT_STAT:
         return ord(rd_data[0])
+
+    elif cmd_name == cmd.TIV_VERS:
+        for i in rd_data:
+            print(hex(ord(i))) 
 
 
 def read_burst_data(cmd_name,cmd,ret_len):
@@ -135,7 +141,10 @@ def read_burst_data(cmd_name,cmd,ret_len):
 
 
 
+#Get Version Numbers
 
+def get_ver():
+    send_info (CMD_TIV_VERS[0], CMD_TIV_VERS[1:8], CMD_TIV_VERS[8]) 
 
 #Get Date and Time
 def get_data():
@@ -169,10 +178,10 @@ def start_scan(store_in_sd):
     send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])
 
     #Device Status
-    status = 0
-    while (status and 0x2) == 1:
-        status = send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
-
+    send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])     
+    time.sleep(3) #scan every 3 sec
+    send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
+    
 def get_results(type):
     # get file size of scan data
     read_file_size = CMD_RED_FSZE[1:8]
