@@ -14,7 +14,7 @@ class scanConfigHead(ctypes.Structure):
                ]
 
 class scanConfigStub(ctypes.Structure):
-    _fields_ = [   
+    _fields_ = [
                 ("wavelength_start_nm", ctypes.c_uint16),
                 ("wavelength_end_nm", ctypes.c_uint16),
                 ("width_px", ctypes.c_uint8),
@@ -112,7 +112,7 @@ def unpack_fields(input):
             dict[field_name] = unpack_fields(getattr(input, field_name))
         except Exception as error:
             value = getattr(input, field_name)
-           
+
             if type(value) == type(bytes()):
                 value = value.decode("utf-8")
             elif type(value) not in [type(int()), type(float), type(long())]:
@@ -129,7 +129,7 @@ def unpack_fields(input):
 def scan_interpret(file):
 
     buffer =  ctypes.create_string_buffer(len(file))
-  
+
     for counter, byte in enumerate(file):
         buffer[counter] = byte
 
@@ -144,18 +144,18 @@ def scan_interpret(file):
     err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,res_pointer)
     print(err)
     unpack = unpack_fields(results)
-    f1 = open("config.txt",'w')
+    f1 = open("results.txt",'w')
     for key in unpack:
         f1.write(key + " ")
         f1.write(str(unpack[key]))
         f1.write("\n\n")
-    f1.close()   
-    
-    
+    f1.close()
+
+
 def read_scan_config(data):
 
     buffer =  ctypes.create_string_buffer(len(data))
-  
+
     for counter, byte in enumerate(data):
         buffer[counter] = byte
 
@@ -165,8 +165,8 @@ def read_scan_config(data):
 
     err = dlp_nano_lib.dlpspec_scan_read_configuration(buffer_pointer,size_number)
     print(err)
-   
-    buffer = scanConfig()    
+
+    buffer = scanConfig()
 
     unpack = unpack_fields(buffer_pointer)
     f1 = open("formatted.txt",'w')
@@ -174,13 +174,13 @@ def read_scan_config(data):
         f1.write(key + " ")
         f1.write(str(unpack[key]))
         f1.write("\n\n")
-    f1.close()   
+    f1.close()
     return unpack
 
 def set_config():
 
     config = scanConfig()
-    
+
     for field_name, field_type in config._fields_:
         if field_name == "head":
             for fname, ftype in field_type._fields_:
@@ -202,16 +202,16 @@ def set_config():
                 elif fname == "width_px":
                     value = 7
                 elif fname == "num_patterns":
-                    value = 228 
+                    value = 228
                 elif fname == "num_repeats":
-                    value = 6           
+                    value = 6
                 setattr(config.stub,fname,value)
 
     config_ptr = ctypes.byref(config)
- 
+
     BufSize = ctypes.c_int()
     BufSizeptr = ctypes.byref(BufSize)
-  
+
     err = dlp_nano_lib.dlpspec_get_scan_config_dump_size(config_ptr, BufSizeptr)
     print("ERROR: " + str(err))
 
@@ -220,13 +220,12 @@ def set_config():
     config_len = ctypes.c_size_t(len(config_serial))
 
     err = dlp_nano_lib.dlpspec_scan_write_configuration(config_ptr, config_serial_ptr, config_len)
-       
+
     print("ERROR: " + str(err))
-    
-    
+
+
     serial_data = []
     for i in range(BufSize.value):
         serial_data.append(ord(config_serial[i]))
     print(serial_data)
-    return serial_data     
-    
+    return serial_data
