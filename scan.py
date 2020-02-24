@@ -144,6 +144,31 @@ def scan_interpret(file):
     err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,res_pointer)
     print(err)
     unpack = unpack_fields(results)
+    f1 = open("config.txt",'w')
+    for key in unpack:
+        f1.write(key + " ")
+        f1.write(str(unpack[key]))
+        f1.write("\n\n")
+    f1.close()   
+    
+    
+def read_scan_config(data):
+
+    buffer =  ctypes.create_string_buffer(len(data))
+  
+    for counter, byte in enumerate(data):
+        buffer[counter] = byte
+
+    buffer_pointer = ctypes.pointer(buffer)
+
+    size_number = ctypes.c_size_t(len(data))
+
+    err = dlp_nano_lib.dlpspec_scan_read_configuration(buffer_pointer,size_number)
+    print(err)
+   
+    buffer = scanConfig()    
+
+    unpack = unpack_fields(buffer_pointer)
     f1 = open("formatted.txt",'w')
     for key in unpack:
         f1.write(key + " ")
@@ -151,7 +176,6 @@ def scan_interpret(file):
         f1.write("\n\n")
     f1.close()   
     return unpack
-    
 
 def set_config():
 
@@ -161,13 +185,13 @@ def set_config():
         if field_name == "head":
             for fname, ftype in field_type._fields_:
                 if fname == "scan_type":
-                    value = 2
+                    value = 0
                 elif fname == "scanConfigIndex":
-                    value = 19
+                    value = 0
                 elif fname == "scanConfig_serial_number":
                     value = "6110022"
                 elif fname == "config_name":
-                    value = "column 2"
+                    value = "column 9"
                 setattr(config.head,fname,value)
         if field_name == "stub":
             for fname, ftype in field_type._fields_:
@@ -176,7 +200,7 @@ def set_config():
                 elif fname == "wavelength_end_nm":
                     value = 0x6A4
                 elif fname == "width_px":
-                    value = 6
+                    value = 7
                 elif fname == "num_patterns":
                     value = 228 
                 elif fname == "num_repeats":
