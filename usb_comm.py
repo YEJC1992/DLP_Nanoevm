@@ -129,10 +129,19 @@ def read_burst_data(cmd_name,cmd,ret_len):
         else:
             data = h.read(read_len)
             read_len = 0
-        file.extend(data)
+        file.extend(data)    
     process_data(file[0:4],cmd_name)
     FILE = file[4:]
     print("Data Fetched: " +str(len(FILE)))
+    
+    # why are we getting this extra data ?? need to figure out
+    ### HACK remove later ###
+    data = 1
+    extra = []
+    while data:
+        data = 0
+        data = h.read(64,10)
+        extra.extend(data)
     return FILE
 
 
@@ -182,29 +191,30 @@ def start_scan(store_in_sd):
     time.sleep(3) #scan every 3 sec
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
     
-def get_results(type):
-    # get file size of scan data
+
+def read_data(type):
+    # get file size of reference data
     read_file_size = CMD_RED_FSZE[1:8]
     read_file_size.append(type)
     send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])
 
-    # Read scan data
-    scanData = read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4)
+    # Read Ref data
+    Data = read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4)
+
+    return Data
+
+def get_results():
+   
+    scanData = read_data(0)
 
     # Interpret Results
     results = scan_interpret(scanData)
 
+    return results
 
-    # Plot wavelenght vs intensity
-    x = results["wavelength"]
-    y = results["intensity"]
+def get_ref_data():
 
-    plt.plot(x,y)
-
-    plt.xlabel("wavelength")
-    plt.ylabel("intensity")
-
-    plt.show()
+    refData = read_data(2)
 
 """
 #Send Scan Config
