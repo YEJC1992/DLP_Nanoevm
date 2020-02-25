@@ -209,13 +209,16 @@ def get_results():
 
     # Interpret Results
     results = scan_interpret(scanData)
-
+  
+    
     return results
 
 def get_ref_data():
 
-    refData = read_data(2)
+    refData   = read_data(2)
+    refMatrix = read_data(3)
 
+    #scan_Ref_interpret(refData,refMatrix,results)
 """
 #Send Scan Config
 

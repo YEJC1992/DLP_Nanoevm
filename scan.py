@@ -152,24 +152,32 @@ def scan_interpret(file):
     f1.close()
     return unpack
 
-def read_scan_config(data):
+def scan_Ref_interpret(refData, refMatrix, scanData):
 
-    buffer =  ctypes.create_string_buffer(len(data))
+    buffer =  ctypes.create_string_buffer(len(refData))
+    matrix =  ctypes.create_string_buffer(len(refMatrix))
 
-    for counter, byte in enumerate(data):
+    for counter, byte in enumerate(refData):
         buffer[counter] = byte
+    for counter, byte in enumerate(refMatrix):
+        matrix[counter] = byte
 
     buffer_pointer = ctypes.pointer(buffer)
+    size_number = ctypes.c_size_t(len(refData))
 
-    size_number = ctypes.c_size_t(len(data))
+    matrix_pointer = ctypes.pointer(matrix)
+    matrix_size = ctypes.c_size_t(len(matrix))
+   
 
-    err = dlp_nano_lib.dlpspec_scan_read_configuration(buffer_pointer,size_number)
+    results = scanResults()
+
+    ref_pointer = ctypes.byref(results)
+
+    err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,matrix_pointer,matrix_size,
+ results, ref_pointer)
     print(err)
-
-    buffer = scanConfig()
-
-    unpack = unpack_fields(buffer_pointer)
-    f1 = open("formatted.txt",'w')
+    unpack = unpack_fields(results)
+    f1 = open("ref_results.txt",'w')
     for key in unpack:
         f1.write(key + " ")
         f1.write(str(unpack[key]))
@@ -187,7 +195,7 @@ def set_config():
                 if fname == "scan_type":
                     value = 0
                 elif fname == "scanConfigIndex":
-                    value = 0
+                    value = 34
                 elif fname == "scanConfig_serial_number":
                     value = "6110022"
                 elif fname == "config_name":
