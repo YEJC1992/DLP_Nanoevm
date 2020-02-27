@@ -18,9 +18,9 @@ setup(VID,PID)
 time.sleep(1)
 
 def led():
-    led_test(1)
+    led_test(1)   # Start Test
     time.sleep(3)
-    led_test(0)
+    led_test(0)   # Stop Test
 
 def date():
     get_data()
@@ -36,20 +36,19 @@ def scan():
 
 
     time.sleep(1)
-
-    get_ref_data()
-
+    
+    ref_scan = get_ref_data()
+    
     #plot data
 
     # Plot wavelenght vs intensity
     x = results["wavelength"]
     y = results["intensity"]
-  
     #clean up results, why do we get random large values??
     wl = []
     itn = []   
     for i in range(0,results["length"]):
-        if ((y[i] < 9999) & (y[i] > -10000)):
+        if (y[i] > 0):
             wl.append(x[i])
             itn.append(y[i])
         
@@ -60,6 +59,8 @@ def scan():
     plt.ylabel("intensity")
     plt.show()
 
+    for i in ref_scan["intensity"]:
+        print(i)
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)

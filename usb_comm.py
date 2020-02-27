@@ -13,6 +13,7 @@ TIMEOUT = 1000
 READ_FILE_SIZE = 0
 FILE = []
 h = 0
+scanresults =scanResults()
 
 def setup(VID,PID):
     global h
@@ -133,7 +134,7 @@ def read_burst_data(cmd_name,cmd,ret_len):
         file.extend(extra[4:])
     print("FILE" + str(len(file)))
     FILE = file
-    return FILE
+    return FILE[0:ret_len]
 
 
 
@@ -184,32 +185,53 @@ def start_scan(store_in_sd):
     
 
 def read_data(type):
-    # get file size of reference data
+    # get file size of  data
     read_file_size = CMD_RED_FSZE[1:8]
     read_file_size.append(type)
     send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])
 
-    # Read Ref data
-    Data = read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8], READ_FILE_SIZE+4)
+    # Read  data
+    Data = read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8],       READ_FILE_SIZE+4)
 
     return Data
 
 def get_results():
-   
+    global scanresults
     scanData = read_data(0)
 
     # Interpret Results
-    results = scan_interpret(scanData)
-  
+    scanresults = scan_interpret(scanData)
+   
+    results = unpack_fields(scanresults)
+
+    f1 = open("scanResults.txt",'w')
+    for key in results:
+        f1.write(key + " ")
+        f1.write(str(results[key]))
+        f1.write("\n\n")
+    f1.close()
     
     return results
 
 def get_ref_data():
-
+    global scanresults
     refData   = read_data(2)
     refMatrix = read_data(3)
 
-    #scan_Ref_interpret(refData,refMatrix,results)
+  
+    scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
+    print(type(scan_ref))
+
+    ref_results = unpack_fields(scan_ref)
+
+    f1 = open("refResults.txt",'w')
+    for key in ref_results:
+        f1.write(key + " ")
+        f1.write(str(ref_results[key]))
+        f1.write("\n\n")
+    f1.close()
+
+    return ref_results
 """
 #Send Scan Config
 

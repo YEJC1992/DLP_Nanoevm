@@ -98,21 +98,18 @@ class scanResults(ctypes.Structure):
                ]
 
 dlp_nano_lib = ctypes.CDLL("src/libtest.dylib")
-#dlp_nano_lib.dlpspec_scan_interpret.argtypes = [ctypes.c_void_p, ctypes.c_size_t, ctypes.POINTER(scanResults)]
-#dlp_nano_lib.dlpspec_scan_read_configuration = [ctypes.c_void_p, ctypes.c_size_t]
-#dlp_nano_lib.dlpspec_scan_write_configuration = [ctypes.POINTER(scanConfig), ctypes.c_void_p, ctypes.c_size_t]
+
 
 
 
 def unpack_fields(input):
-
     dict = {}
     for field_name, field_type in input._fields_:
+        print(field_name)
         try:
             dict[field_name] = unpack_fields(getattr(input, field_name))
         except Exception as error:
             value = getattr(input, field_name)
-
             if type(value) == type(bytes()):
                 value = value.decode("utf-8")
             elif type(value) not in [type(int()), type(float), type(long())]:
@@ -143,14 +140,9 @@ def scan_interpret(file):
 
     err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,res_pointer)
     print(err)
-    unpack = unpack_fields(results)
-    f1 = open("results.txt",'w')
-    for key in unpack:
-        f1.write(key + " ")
-        f1.write(str(unpack[key]))
-        f1.write("\n\n")
-    f1.close()
-    return unpack
+
+    
+    return results
 
 def scan_Ref_interpret(refData, refMatrix, scanData):
 
@@ -169,21 +161,17 @@ def scan_Ref_interpret(refData, refMatrix, scanData):
     matrix_size = ctypes.c_size_t(len(matrix))
    
 
-    results = scanResults()
+    ref_results = scanResults()
+    ref_pointer = ctypes.byref(ref_results)
 
-    ref_pointer = ctypes.byref(results)
+    res_ptr = ctypes.byref(scanData)
 
-    err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,matrix_pointer,matrix_size,
- results, ref_pointer)
-    print(err)
-    unpack = unpack_fields(results)
-    f1 = open("ref_results.txt",'w')
-    for key in unpack:
-        f1.write(key + " ")
-        f1.write(str(unpack[key]))
-        f1.write("\n\n")
-    f1.close()
-    return unpack
+    err = dlp_nano_lib.dlpspec_scan_interpReference(buffer_pointer,size_number,matrix_pointer,matrix_size,
+ res_ptr, ref_pointer)
+
+    print("Error" + str(err))
+    
+    return ref_results
 
 def set_config():
 
