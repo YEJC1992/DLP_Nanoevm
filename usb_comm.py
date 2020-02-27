@@ -116,32 +116,23 @@ def read_data_process(rd_data,cmd_name):
 
 
 def read_burst_data(cmd_name,cmd,ret_len):
+    
     global FILE
     global h
     file = []
-    read_len = ret_len
     while len(file) < ret_len:
         h.write(''.join(map(chr,cmd)))
         time.sleep(0.03)
-        if read_len > 64:
-            data = h.read(64)
-            read_len -= 64
-        else:
-            data = h.read(read_len)
-            read_len = 0
-        file.extend(data)    
-    process_data(file[0:4],cmd_name)
-    FILE = file[4:]
-    print("Data Fetched: " +str(len(FILE)))
-    
-    # why are we getting this extra data ?? need to figure out
-    ### HACK remove later ###
-    data = 1
-    extra = []
-    while data:
-        data = 0
-        data = h.read(64,10)
-        extra.extend(data)
+        data = 1
+        extra = []
+        while data:
+            data = 0
+            data = h.read(64,10)
+            extra.extend(data)
+        process_data(extra[0:4],cmd_name)
+        file.extend(extra[4:])
+    print("FILE" + str(len(file)))
+    FILE = file
     return FILE
 
 
