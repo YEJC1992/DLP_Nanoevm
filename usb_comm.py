@@ -120,8 +120,8 @@ def read_burst_data(cmd_name,cmd,ret_len):
     
     global FILE
     global h
-    file = []
-    while len(file) < ret_len:
+    rfile = []
+    while len(rfile) < ret_len:
         h.write(''.join(map(chr,cmd)))
         time.sleep(0.03)
         data = 1
@@ -131,10 +131,9 @@ def read_burst_data(cmd_name,cmd,ret_len):
             data = h.read(64,10)
             extra.extend(data)
         process_data(extra[0:4],cmd_name)
-        file.extend(extra[4:])
-    print("FILE" + str(len(file)))
-    FILE = file
-    return FILE[0:ret_len]
+        rfile.extend(extra[4:])
+    FILE = rfile
+    return FILE
 
 
 
@@ -220,9 +219,8 @@ def get_ref_data():
 
   
     scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
-    print(type(scan_ref))
-
-    ref_results = unpack_fields(scan_ref)
+    
+    ref_results = unpack_ref(scan_ref)
 
     f1 = open("refResults.txt",'w')
     for key in ref_results:

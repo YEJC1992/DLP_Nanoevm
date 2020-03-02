@@ -100,12 +100,22 @@ class scanResults(ctypes.Structure):
 dlp_nano_lib = ctypes.CDLL("src/libtest.dylib")
 
 
-
+def unpack_ref(input):
+    dict = {}
+    for field_name, field_type in input._fields_:
+        if field_name == "wavelength" or field_name == "intensity":
+            value = getattr(input, field_name)
+            if type(value) == type(bytes()):
+                value = value.decode("utf-8")
+            newval = []
+            for i in value:
+                newval.append(i)
+            dict[field_name] = newval    
+    return dict
 
 def unpack_fields(input):
     dict = {}
     for field_name, field_type in input._fields_:
-        print(field_name)
         try:
             dict[field_name] = unpack_fields(getattr(input, field_name))
         except Exception as error:
@@ -121,6 +131,7 @@ def unpack_fields(input):
                         newval.append(i)
                 value = newval
             dict[field_name] = value
+            
     return dict
 
 def scan_interpret(file):
