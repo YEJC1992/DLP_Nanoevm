@@ -136,12 +136,12 @@ def unpack_fields(input):
 
 def scan_interpret(file):
 
-    buffer =  ctypes.create_string_buffer(len(file))
+    buffer0 =  ctypes.create_string_buffer(len(file))
 
     for counter, byte in enumerate(file):
-        buffer[counter] = byte
+        buffer0[counter] = byte
 
-    buffer_pointer = ctypes.pointer(buffer)
+    buffer_pointer = ctypes.pointer(buffer0)
 
     size_number = ctypes.c_size_t(len(file))
 
@@ -157,15 +157,15 @@ def scan_interpret(file):
 
 def scan_Ref_interpret(refData, refMatrix, scanData):
 
-    buffer =  ctypes.create_string_buffer(len(refData))
+    buffer1 =  ctypes.create_string_buffer(len(refData))
     matrix =  ctypes.create_string_buffer(len(refMatrix))
 
     for counter, byte in enumerate(refData):
-        buffer[counter] = byte
+        buffer1[counter] = byte
     for counter, byte in enumerate(refMatrix):
         matrix[counter] = byte
 
-    buffer_pointer = ctypes.pointer(buffer)
+    buffer_pointer = ctypes.pointer(buffer1)
     size_number = ctypes.c_size_t(len(refData))
 
     matrix_pointer = ctypes.pointer(matrix)

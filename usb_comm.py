@@ -15,6 +15,7 @@ FILE = []
 h = 0
 scanresults =scanResults()
 
+#Open Devices
 def setup(VID,PID):
     global h
 
@@ -24,7 +25,7 @@ def setup(VID,PID):
     print("Product:  " + h.product +" Device:  " + h.manufacturer)
     print("Serial Number:  " + str(h.serial) + "\n")
     
-
+#Sends commands to device and waits for read data back from device
 def send_info(cmd_name,cmd,ret_len):
      global h
 
@@ -34,6 +35,7 @@ def send_info(cmd_name,cmd,ret_len):
          data = h.read(ret_len)
          process_data(data,cmd_name)
 
+#Decodes the Flag byte
 def extract_flags(flag_byte):
     global FLG_STATUS
 
@@ -45,6 +47,7 @@ def extract_flags(flag_byte):
           " Err: " + str(FLG_STATUS["ERR"]) )
     return FLG_STATUS
 
+#Decodes read message from device
 def process_data(data,cmd_name):
 
     status = extract_flags(data[0])
@@ -65,7 +68,7 @@ def process_data(data,cmd_name):
     else:
         print("\n")
 
-
+# cmd specific decode of data
 def read_data_process(rd_data,cmd_name):
 
     if cmd_name == cmd.RED_FSZE or cmd_name == cmd.SIZ_LIST:
@@ -115,7 +118,7 @@ def read_data_process(rd_data,cmd_name):
         for i in rd_data:
             print(hex(ord(i))) 
 
-
+# Gets scan data
 def read_burst_data(cmd_name,cmd,ret_len):
     
     global FILE
@@ -142,7 +145,6 @@ def read_burst_data(cmd_name,cmd,ret_len):
 
 
 #Get Version Numbers
-
 def get_ver():
     send_info (CMD_TIV_VERS[0], CMD_TIV_VERS[1:8], CMD_TIV_VERS[8]) 
 
@@ -190,13 +192,18 @@ def read_data(type):
     send_info (CMD_RED_FSZE[0], read_file_size, CMD_RED_FSZE[8])
 
     # Read  data
-    Data = read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8],       READ_FILE_SIZE+4)
+    Data = read_burst_data (CMD_RED_FDAT[0], CMD_RED_FDAT[1:8],READ_FILE_SIZE+4)
 
     return Data
 
 def get_results():
     global scanresults
     scanData = read_data(0)
+  
+    f1 = open("scanResultsraw.txt",'w')
+    for i in scanData:
+        f1.write(i)
+    f1.close()
 
     # Interpret Results
     scanresults = scan_interpret(scanData)
@@ -230,6 +237,8 @@ def get_ref_data():
     f1.close()
 
     return ref_results
+
+
 """
 #Send Scan Config
 

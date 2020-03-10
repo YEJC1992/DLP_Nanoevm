@@ -45,7 +45,7 @@ def scan():
     x = results["wavelength"]
     y = results["intensity"]
     z = ref_scan["intensity"]
-    #clean up results, why do we get random large values??
+    #!!!clean up results, why do we get -ve values??
     wl = []
     itn = []   
     rs = []
@@ -57,7 +57,6 @@ def scan():
             wl.append(x[i])
             if z[i]/y[i] > 0:
                 absorbance = math.log(z[i]/y[i])
-                
                 absb.append(absorbance)
 
     plt.plot(wl,itn,'b')
