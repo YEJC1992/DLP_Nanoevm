@@ -1,10 +1,10 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.6
 
 import hid
 import time
 from commands import *
 from usb_comm import *
-import Tkinter as tk
+import tkinter as tk
 import math
 
 VID = 0x0451

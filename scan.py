@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.6
 
 
 import ctypes
@@ -122,7 +122,7 @@ def unpack_fields(input):
             value = getattr(input, field_name)
             if type(value) == type(bytes()):
                 value = value.decode("utf-8")
-            elif type(value) not in [type(int()), type(float), type(long())]:
+            elif type(value) not in [type(int()), type(float)]:
                 newval = []
                 for i in value:
                     try:

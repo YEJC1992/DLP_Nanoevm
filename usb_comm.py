@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.6
 
 import hid
 import time
@@ -21,15 +21,18 @@ def setup(VID,PID):
 
     device_list = hid.enumerate(VID,PID)
     print (device_list)
-    h = hid.Device(VID,PID)
-    print("Product:  " + h.product +" Device:  " + h.manufacturer)
-    print("Serial Number:  " + str(h.serial) + "\n")
+    h = hid.device()
+    h.open(VID,PID)
+    #print("Product:  " + h.product +" Device:  " + h.manufacturer)
+    #print("Serial Number:  " + str(h.serial) + "\n")
     
 #Sends commands to device and waits for read data back from device
 def send_info(cmd_name,cmd,ret_len):
      global h
-
-     h.write(''.join(map(chr,cmd)))
+     
+     command = ''.join(map(chr,cmd))
+     b = bytes(command,encoding='utf8')
+     h.write(cmd)
      time.sleep(0.01)
      if ret_len != 0:
          data = h.read(ret_len)
@@ -39,9 +42,9 @@ def send_info(cmd_name,cmd,ret_len):
 def extract_flags(flag_byte):
     global FLG_STATUS
 
-    FLG_STATUS["ERR"] = (ord(flag_byte) & 0x30) >> 4
-    FLG_STATUS["R/W"] = (ord(flag_byte) & 0x80) >> 7
-    FLG_STATUS["RDY"] = (ord(flag_byte) & 0x40) >> 6
+    FLG_STATUS["ERR"] = (flag_byte & 0x30) >> 4
+    FLG_STATUS["R/W"] = (flag_byte & 0x80) >> 7
+    FLG_STATUS["RDY"] = (flag_byte & 0x40) >> 6
     print("R/W: " + str(FLG_STATUS["R/W"]) +
           " Rdy: " + str(FLG_STATUS["RDY"]) +
           " Err: " + str(FLG_STATUS["ERR"]) )
@@ -60,9 +63,9 @@ def process_data(data,cmd_name):
     elif status["R/W"] == 0 and len(data)>1:
         read_data_process(data[1:],cmd_name)
     elif status["R/W"] == 1:                      # read  transaction
-        seq_no = ord(data[1])
+        seq_no = data[1]
         print("Seq_no: " + str(seq_no))
-        length = ord(data[2]) + (ord(data[3]) << 8)
+        length = data[2] + (data[3] << 8)
         print("Packet_Len: " + str(length))
         read_data_process(data[4:],cmd_name)
     else:
@@ -75,48 +78,48 @@ def read_data_process(rd_data,cmd_name):
         global READ_FILE_SIZE
         size = 0
         for i in range(len(rd_data)):
-            size += ord(rd_data[i]) << (i*8)
+            size += rd_data[i] << (i*8)
         READ_FILE_SIZE = size
         print("READ FILE SIZE: " + str(READ_FILE_SIZE) + "\n")
 
     elif (cmd_name == cmd.CFG_APPY) or (cmd_name == cmd.ERR_STAT):
         for i in rd_data:
-            print(hex(ord(i)))
+            print(hex(i))
 
     elif cmd_name == cmd.GET_TDAT:
-        print("{}-{}-{}  {}:{}:{}\n".format(ord(rd_data[2]),ord(rd_data[1]),
-                                            ord(rd_data[0]),ord(rd_data[4]),
-                                            ord(rd_data[5]),ord(rd_data[6])))
+        print("{}-{}-{}  {}:{}:{}\n".format(rd_data[2],rd_data[1],
+                                            rd_data[0],rd_data[4],
+                                            rd_data[5],rd_data[6]))
 
     elif cmd_name == cmd.LED_TEST:
-        if ord(rd_data[0]) == 0:
+        if rd_data[0] == 0:
             print("LED TEST PASSED\n")
         else:
             print("LED TEST FAIL\n")
 
     elif cmd_name == cmd.NUM_CONF:
-        print("NUM OF STORED SCAN CONFIGS: " + str(ord(rd_data[0])) + "\n")
+        print("NUM OF STORED SCAN CONFIGS: " + str(rd_data[0]) + "\n")
 
     elif cmd_name == cmd.GET_SCON:
-        print("ACTIVE SCAN CONFIG: " + str(ord(rd_data[0])) + "\n")
+        print("ACTIVE SCAN CONFIG: " + str(rd_data[0]) + "\n")
 
     elif cmd_name == cmd.DEV_STAT:
-        stat = ord(rd_data[0])
+        stat = rd_data[0]
         print("Device Status: "+str(stat) + "\n")
         return stat
 
     elif cmd_name == cmd.SCN_TIME:
         time = 0
         for i in range(len(rd_data)):
-           time += ord(rd_data[i]) << (i*8)
+           time += rd_data[i] << (i*8)
         print("SCAN_TIME: " + str(time)+ "\n")
 
     elif cmd_name == cmd.INT_STAT:
-        return ord(rd_data[0])
+        return rd_data[0]
 
     elif cmd_name == cmd.TIV_VERS:
         for i in rd_data:
-            print(hex(ord(i))) 
+            print(hex(i)) 
 
 # Gets scan data
 def read_burst_data(cmd_name,cmd,ret_len):
@@ -125,8 +128,8 @@ def read_burst_data(cmd_name,cmd,ret_len):
     global h
     rfile = []
     while len(rfile) < ret_len:
-        h.write(''.join(map(chr,cmd)))
-        time.sleep(0.03)
+        h.write(cmd)
+        time.sleep(0.01)
         data = 1
         extra = []
         while data:
@@ -202,7 +205,7 @@ def get_results():
   
     f1 = open("scanResultsraw.txt",'w')
     for i in scanData:
-        f1.write(i)
+        f1.write(str(i))
     f1.close()
 
     # Interpret Results
@@ -227,6 +230,11 @@ def get_ref_data():
   
     scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
     
+    f1 = open("refResultsraw.txt",'w')
+    for i in refData:
+        f1.write(str(i))
+    f1.close()
+
     ref_results = unpack_ref(scan_ref)
 
     f1 = open("refResults.txt",'w')
