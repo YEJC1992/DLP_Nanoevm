@@ -219,13 +219,9 @@ def read_data(type):
 #convert scan raw data to python dict
 def get_results():
     global scanresults
-    scanData = read_data(0)
-  
-    f1 = open("scanResultsraw.txt",'w')
-    for i in scanData:
-        f1.write(str(i))
-    f1.close()
 
+    scanData = read_data(0)
+ 
     # Interpret Results
     scanresults = scan_interpret(scanData)
    
@@ -249,11 +245,6 @@ def get_ref_data():
   
     scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
     
-    f1 = open("refResultsraw.txt",'w')
-    for i in refData:
-        f1.write(str(i))
-    f1.close()
-
     ref_results = unpack_ref(scan_ref)
 
     f1 = open("refResults.txt",'w')
@@ -273,15 +264,13 @@ def set_scan_config():
 
     buf_len = len(serial_scan_config)
     print(buf_len)
-    i = 0
-    j = 0
-    ret_len = 0
     data = []
     data = CMD_CFG_APPY[1:8] 
-    data[2] = i
-    data[3] = buf_len + 4
+    data[3] = buf_len + 2
+
     data.extend(serial_scan_config)
-    send_info(CMD_CFG_APPY[0], data, 4+1)
-    i += 1
+    print(data)
+    send_info(CMD_CFG_APPY[0], data, CMD_CFG_APPY[8])
+   
 
 

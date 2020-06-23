@@ -33,7 +33,7 @@ def scan():
 
     get_scan_config_id()
     
-    set_active_config(0)
+    #set_active_config(0)
 
 
     start_scan(0) # donot store in sd card
