@@ -6,6 +6,7 @@ from commands import *
 from usb_comm import *
 import tkinter as tk
 import math
+import matplotlib.pyplot as plt
 
 VID = 0x0451
 PID = 0x4200
@@ -23,10 +24,15 @@ def led():
     led_test(0)   # Stop Test
 
 def date():
-    get_data()
+    get_date()
 
+def config():
+
+    set_scan_config()
 def scan():
+
     get_scan_config_id()
+    
     set_active_config(0)
 
 
@@ -50,11 +56,12 @@ def scan():
     itn = []   
     rs = []
     absb = []
+
     for i in range(0,results["length"]):
         if (y[i] > 0):
             itn.append(y[i])
             rs.append(z[i])
-            wl.append(x[i])
+            wl.append(x[i]) 
             if z[i]/y[i] > 0:
                 absorbance = math.log(z[i]/y[i])
                 absb.append(absorbance)
@@ -64,12 +71,13 @@ def scan():
     plt.ylabel("absorbance")
     plt.show()
 
-
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)
+c = tk.Button(gui, text='Set Config', width=20, command=config)
 s = tk.Button(gui, text='Scan'    , width=20, command=scan)
 d.grid()
 l.grid()
+c.grid()
 s.grid()
 gui.mainloop()
 

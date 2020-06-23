@@ -7,7 +7,7 @@ from commands import *
 from scan import *
 import matplotlib.pyplot as plt
 import math
-
+import datetime
 
 TIMEOUT = 1000
 READ_FILE_SIZE = 0
@@ -25,15 +25,14 @@ def setup(VID,PID):
     h.open(VID,PID)
     #print("Product:  " + h.product +" Device:  " + h.manufacturer)
     #print("Serial Number:  " + str(h.serial) + "\n")
+    set_date()
     
 #Sends commands to device and waits for read data back from device
 def send_info(cmd_name,cmd,ret_len):
      global h
      
-     command = ''.join(map(chr,cmd))
-     b = bytes(command,encoding='utf8')
      h.write(cmd)
-     time.sleep(0.01)
+     time.sleep(0.05)
      if ret_len != 0:
          data = h.read(ret_len)
          process_data(data,cmd_name)
@@ -121,6 +120,7 @@ def read_data_process(rd_data,cmd_name):
         for i in rd_data:
             print(hex(i)) 
 
+
 # Gets scan data
 def read_burst_data(cmd_name,cmd,ret_len):
     
@@ -129,7 +129,7 @@ def read_burst_data(cmd_name,cmd,ret_len):
     rfile = []
     while len(rfile) < ret_len:
         h.write(cmd)
-        time.sleep(0.01)
+        time.sleep(0.03)
         data = 1
         extra = []
         while data:
@@ -151,8 +151,19 @@ def read_burst_data(cmd_name,cmd,ret_len):
 def get_ver():
     send_info (CMD_TIV_VERS[0], CMD_TIV_VERS[1:8], CMD_TIV_VERS[8]) 
 
+#Set Date and Time
+def set_date():
+    cur_tdat = CMD_SET_TDAT[1:8]
+    now = datetime.datetime.now()
+    year = int(str(now.year)[2:]) 
+    weekday = datetime.date(now.year,now.month,now.day).weekday()
+    cur_tdat.extend([year,now.month,now.day,weekday,now.hour,now.minute,now.second])
+    print(cur_tdat)
+
+    send_info (CMD_SET_TDAT[0], cur_tdat, CMD_SET_TDAT[8]) # Set time and date
+
 #Get Date and Time
-def get_data():
+def get_date():
     send_info (CMD_GET_TDAT[0], CMD_GET_TDAT[1:8], CMD_GET_TDAT[8]) # Get time and date
 
 #Start LED Test
@@ -161,11 +172,13 @@ def led_test(start):
     led_start.append(start)
     send_info (CMD_LED_TEST[0], led_start, CMD_LED_TEST[8])  #start led Test
 
-
+# Get number of scan configs available and current active config
 def get_scan_config_id():
     send_info (CMD_NUM_CONF[0], CMD_NUM_CONF[1:8], CMD_NUM_CONF[8]) #Num of scan config
     send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8]) #Current active config
 
+
+# Pick Active config
 def set_active_config(index):
     set_scan_config = CMD_SET_SCON[1:8]
     set_scan_config.append(index)             # Select config by user
@@ -173,9 +186,12 @@ def set_active_config(index):
 
     send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
+#Start the scan
 def start_scan(store_in_sd):
     #Scan Time
     send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])
+
+    
 
     #Start Scan
     start_scan = CMD_STR_SCAN[1:8]
@@ -186,8 +202,9 @@ def start_scan(store_in_sd):
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])     
     time.sleep(3) #scan every 3 sec
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
-    
 
+    
+#read scan data
 def read_data(type):
     # get file size of  data
     read_file_size = CMD_RED_FSZE[1:8]
@@ -199,6 +216,7 @@ def read_data(type):
 
     return Data
 
+#convert scan raw data to python dict
 def get_results():
     global scanresults
     scanData = read_data(0)
@@ -222,6 +240,7 @@ def get_results():
     
     return results
 
+#Get ref raw data
 def get_ref_data():
     global scanresults
     refData   = read_data(2)
@@ -247,33 +266,22 @@ def get_ref_data():
     return ref_results
 
 
-"""
-#Send Scan Config
+#Set custom Scan Config
+def set_scan_config():
 
-serial_scan_config = set_config()
+    serial_scan_config = set_config()
 
-buf_len = len(serial_scan_config)
-
-i = 0
-j = 0
-ret_len = 0
-while buf_len != 0:
+    buf_len = len(serial_scan_config)
     print(buf_len)
-    data=[]
-    data = CMD_CFG_APPY[1:8]
+    i = 0
+    j = 0
+    ret_len = 0
+    data = []
+    data = CMD_CFG_APPY[1:8] 
     data[2] = i
-    data[3] = buf_len + 2
-    if (j+57) < len(serial_scan_config):
-        data.extend(serial_scan_config[j:j+57])
-        buf_len = buf_len - 57
-        j += 57
-    else:
-        data.extend(serial_scan_config[j:])
-        buf_len = 0
-        ret_len = 4+1
-    print(data)
-    send_info(CMD_CFG_APPY[0], data, ret_len)
+    data[3] = buf_len + 4
+    data.extend(serial_scan_config)
+    send_info(CMD_CFG_APPY[0], data, 4+1)
     i += 1
 
 
-"""

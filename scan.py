@@ -150,7 +150,7 @@ def scan_interpret(file):
     res_pointer = ctypes.byref(results)
 
     err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,res_pointer)
-    print(err)
+    print("Scan result interpret Error" + str(err))
 
     
     return results
@@ -180,7 +180,7 @@ def scan_Ref_interpret(refData, refMatrix, scanData):
     err = dlp_nano_lib.dlpspec_scan_interpReference(buffer_pointer,size_number,matrix_pointer,matrix_size,
  res_ptr, ref_pointer)
 
-    print("Error" + str(err))
+    print("Ref interpret Error" + str(err))
     
     return ref_results
 
@@ -194,20 +194,20 @@ def set_config():
                 if fname == "scan_type":
                     value = 0
                 elif fname == "scanConfigIndex":
-                    value = 34
+                    value = 4
                 elif fname == "scanConfig_serial_number":
-                    value = "6110022"
+                    value = str.encode("6110022")
                 elif fname == "config_name":
-                    value = "column 9"
+                    value = str.encode("Testing")
                 setattr(config.head,fname,value)
         if field_name == "stub":
             for fname, ftype in field_type._fields_:
                 if fname == "wavelength_start_nm":
-                    value = 0x384
+                    value = 900
                 elif fname == "wavelength_end_nm":
-                    value = 0x6A4
+                    value = 1700
                 elif fname == "width_px":
-                    value = 7
+                    value = 6
                 elif fname == "num_patterns":
                     value = 228
                 elif fname == "num_repeats":
@@ -220,19 +220,21 @@ def set_config():
     BufSizeptr = ctypes.byref(BufSize)
 
     err = dlp_nano_lib.dlpspec_get_scan_config_dump_size(config_ptr, BufSizeptr)
-    print("ERROR: " + str(err))
+    print("Config size ERROR: " + str(err))
 
+    
     config_serial = ctypes.create_string_buffer(BufSize.value)
     config_serial_ptr = ctypes.pointer(config_serial)
     config_len = ctypes.c_size_t(len(config_serial))
 
     err = dlp_nano_lib.dlpspec_scan_write_configuration(config_ptr, config_serial_ptr, config_len)
 
-    print("ERROR: " + str(err))
+    print("Config serialize ERROR: " + str(err))
 
 
     serial_data = []
     for i in range(BufSize.value):
         serial_data.append(ord(config_serial[i]))
+    print("ALL DATA")
     print(serial_data)
     return serial_data

@@ -704,7 +704,7 @@ DLPSPEC_ERR_CODE dlpspec_scan_interpret(const void *pBuf, const size_t bufSize,
     if(pCopyBuff != NULL)
 	    free(pCopyBuff);
 
-	return ret_val;
+    return ret_val;
 }
 
 static DLPSPEC_ERR_CODE dlpspec_scan_scale_for_pga_gain(const scanResults 
