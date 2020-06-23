@@ -1,0 +1,8 @@
+build/
+dist/
+MANIFEST
+hid.c
+hidraw.c
+.eggs/
+hidapi.egg-info/
+.tox/
