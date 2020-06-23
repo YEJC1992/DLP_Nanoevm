@@ -26,15 +26,19 @@ def led():
 def date():
     get_date()
 
-def config():
+def custom_config():
 
     set_scan_config()
+    scan()
+
+def default_config():
+    set_active_config(0)
+    scan()
+
 def scan():
 
     get_scan_config_id()
-    
-    #set_active_config(0)
-
+  
 
     start_scan(0) # donot store in sd card
 
@@ -73,8 +77,8 @@ def scan():
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)
-c = tk.Button(gui, text='Set Config', width=20, command=config)
-s = tk.Button(gui, text='Scan'    , width=20, command=scan)
+c = tk.Button(gui, text='Custom Config scan', width=20, command=custom_config)
+s = tk.Button(gui, text='Default Config scan', width=20, command=default_config)
 d.grid()
 l.grid()
 c.grid()
