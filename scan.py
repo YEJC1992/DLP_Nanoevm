@@ -134,7 +134,7 @@ def unpack_fields(input):
             
     return dict
 
-def scan_interpret(file):
+def scan_interpret(file,interpret):
 
     buffer0 =  ctypes.create_string_buffer(len(file))
 
@@ -149,10 +149,15 @@ def scan_interpret(file):
 
     res_pointer = ctypes.byref(results)
 
-    err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,res_pointer)
-    print("Scan result interpret Error" + str(err))
-
-    
+    if interpret == 0:
+        #raw data to be interpreted and formatted
+        err = dlp_nano_lib.dlpspec_scan_interpret(buffer_pointer,size_number,res_pointer)
+        print("Scan result interpret Error" + str(err))
+    else:
+        #raw data already interpreted by sensor, just format
+        err = dlp_nano_lib.format_scan_interpret(buffer_pointer,res_pointer)
+        print("Format Scan interpret Error" + str(err))
+   
     return results
 
 def scan_Ref_interpret(refData, refMatrix, scanData):
@@ -235,6 +240,4 @@ def set_config():
     serial_data = []
     for i in range(BufSize.value):
         serial_data.append(ord(config_serial[i]))
-    print("ALL DATA")
-    print(serial_data)
     return serial_data

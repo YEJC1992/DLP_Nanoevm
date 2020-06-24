@@ -1227,6 +1227,35 @@ DLPSPEC_ERR_CODE dlpspec_scan_section_get_adc_data_range(const slewScanData
 
     return DLPSPEC_PASS;
 }
+
+DLPSPEC_ERR_CODE format_scan_interpret(void *pBuf, scanResults *pResults)
+{
+    int i, length;
+    void *pBufAdd;
+    if(pBuf != NULL)
+    {
+        length = *((int *) pBuf);
+        pResults->length = length;
+        pBufAdd = (unsigned char *) pBuf + sizeof(int);
+        pBuf = pBufAdd;
+
+        for(i = 0; i < length; i++)
+        {
+            pResults->wavelength[i] = *((double *)pBuf);
+            //printf("%f\t",pResults->wavelength[i]);
+            pBufAdd = (unsigned char *) pBuf + sizeof(double);
+            pBuf = pBufAdd;
+
+            pResults->intensity[i] = *((int *)pBuf);
+            //printf("%d\n",pResults->intensity[i]);
+            pBufAdd = (unsigned char *) pBuf + sizeof(int);
+            pBuf = pBufAdd;
+        }
+     }
+
+     return DLPSPEC_PASS;
+
+}
 /** @} // group group_scan
  *
  */

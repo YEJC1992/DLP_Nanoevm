@@ -13,6 +13,7 @@ TIMEOUT = 1000
 READ_FILE_SIZE = 0
 FILE = []
 h = 0
+scan_interpret_done = 0
 scanresults =scanResults()
 
 #Open Devices
@@ -114,7 +115,9 @@ def read_data_process(rd_data,cmd_name):
         print("SCAN_TIME: " + str(time)+ "\n")
 
     elif cmd_name == cmd.INT_STAT:
-        return rd_data[0]
+        global scan_interpret_done
+        scan_interpret_done = rd_data[0]
+        print("SCAN INTERPRET" +str(rd_data[0]))
 
     elif cmd_name == cmd.TIV_VERS:
         for i in rd_data:
@@ -158,7 +161,6 @@ def set_date():
     year = int(str(now.year)[2:]) 
     weekday = datetime.date(now.year,now.month,now.day).weekday()
     cur_tdat.extend([year,now.month,now.day,weekday,now.hour,now.minute,now.second])
-    print(cur_tdat)
 
     send_info (CMD_SET_TDAT[0], cur_tdat, CMD_SET_TDAT[8]) # Set time and date
 
@@ -188,6 +190,8 @@ def set_active_config(index):
 
 #Start the scan
 def start_scan(store_in_sd):
+    global scan_interpret_done
+
     #Scan Time
     send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])
 
@@ -200,8 +204,15 @@ def start_scan(store_in_sd):
 
     #Device Status
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])     
-    time.sleep(3) #scan every 3 sec
+    time.sleep(5) #scan every 3 sec
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
+
+    #Scan Interpret
+    send_info (CMD_STR_SINT[0], CMD_STR_SINT[1:8], CMD_STR_SINT[8])
+    
+    while scan_interpret_done != 1:
+        send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
+    scan_interpret_done = 0
 
     
 #read scan data
@@ -219,13 +230,13 @@ def read_data(type):
 #convert scan raw data to python dict
 def get_results():
     global scanresults
-
-    scanData = read_data(0)
- 
+     
+    scanData = read_data(8)   # 0: scan_data, 8: scan_interpret_data
+  
     # Interpret Results
-    scanresults = scan_interpret(scanData)
-   
-    results = unpack_fields(scanresults)
+    scanresults = scan_interpret(scanData,1)  # 0: interpret and format, 1: only format
+    
+    results = unpack_ref(scanresults)
 
     f1 = open("scanResults.txt",'w')
     for key in results:
@@ -233,6 +244,7 @@ def get_results():
         f1.write(str(results[key]))
         f1.write("\n\n")
     f1.close()
+    
     
     return results
 
@@ -263,13 +275,11 @@ def set_scan_config():
     serial_scan_config = set_config()
 
     buf_len = len(serial_scan_config)
-    print(buf_len)
     data = []
     data = CMD_CFG_APPY[1:8] 
     data[3] = buf_len + 2
 
     data.extend(serial_scan_config)
-    print(data)
     send_info(CMD_CFG_APPY[0], data, CMD_CFG_APPY[8])
    
 

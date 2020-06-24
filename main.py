@@ -7,6 +7,7 @@ from usb_comm import *
 import tkinter as tk
 import math
 import matplotlib.pyplot as plt
+import pandas as pd
 
 VID = 0x0451
 PID = 0x4200
@@ -35,45 +36,34 @@ def default_config():
     set_active_config(0)
     scan()
 
+def spectral_plot(df):
+
+    df.plot(kind='scatter',x="wavelength",y="intensity")
+    plt.title('NIR Spectra')
+    plt.xlabel('Wavelength')
+    plt.ylabel('Intensity')
+    plt.show()
+
 def scan():
 
     get_scan_config_id()
-  
 
     start_scan(0) # donot store in sd card
 
-    results = get_results() # of scanData
-
-
-    time.sleep(1)
+    results = get_results() # get scan results
     
-    ref_scan = get_ref_data()
+    #ref_scan = get_ref_data() # get reference values
     
-    #plot data
+   
 
-    # Plot wavelenght vs intensity
-    x = results["wavelength"]
-    y = results["intensity"]
-    z = ref_scan["intensity"]
-    #!!!clean up results, why do we get -ve values??
-    wl = []
-    itn = []   
-    rs = []
-    absb = []
+    # Convert the results into a dataframe
 
-    for i in range(0,results["length"]):
-        if (y[i] > 0):
-            itn.append(y[i])
-            rs.append(z[i])
-            wl.append(x[i]) 
-            if z[i]/y[i] > 0:
-                absorbance = math.log(z[i]/y[i])
-                absb.append(absorbance)
-
-    plt.plot(wl,itn,'b')
-    plt.xlabel("wavelength")
-    plt.ylabel("absorbance")
-    plt.show()
+    values = {"wavelength":results["wavelength"],"intensity":results["intensity"]}
+    df = pd.DataFrame(values)
+    df = df[(df[['wavelength','intensity']] != 0).all(axis=1)] # drop values of 0
+    spectral_plot(df) # Plot wavelength vs intensity
+    df.to_csv("spectral_data.csv")
+    
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)
