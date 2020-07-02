@@ -231,12 +231,12 @@ def read_data(type):
 def get_results():
     global scanresults
 
-    scanData = read_data(0)   # 0: scan_data, 8: scan_interpret_data
+    scanData = read_data(8)   # 0: scan_data, 8: scan_interpret_data
 
     # Interpret Results
-    scanresults = scan_interpret(scanData,0)  # 0: interpret and format, 1: only format
+    scanresults = scan_interpret(scanData,1)  # 0: interpret and format, 1: only format
 
-    results = unpack_fields(scanresults)
+    results = unpack_ref(scanresults)
 
     f1 = open("scanResults.txt",'w')
     for key in results:

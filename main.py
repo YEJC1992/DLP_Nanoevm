@@ -52,7 +52,7 @@ def scan():
 
     results = get_results() # get scan results
 
-    ref_scan = get_ref_data() # get reference values
+    #ref_scan = get_ref_data() # get reference values
 
 
 
