@@ -97,7 +97,7 @@ class scanResults(ctypes.Structure):
                 ("length",           ctypes.c_int)
                ]
 
-dlp_nano_lib = ctypes.CDLL("src/libtest.dylib")
+dlp_nano_lib = ctypes.CDLL("src/libdlpspec.dll")
 
 
 def unpack_ref(input):
@@ -110,7 +110,7 @@ def unpack_ref(input):
             newval = []
             for i in value:
                 newval.append(i)
-            dict[field_name] = newval    
+            dict[field_name] = newval
     return dict
 
 def unpack_fields(input):
@@ -131,7 +131,7 @@ def unpack_fields(input):
                         newval.append(i)
                 value = newval
             dict[field_name] = value
-            
+
     return dict
 
 def scan_interpret(file,interpret):
@@ -157,7 +157,7 @@ def scan_interpret(file,interpret):
         #raw data already interpreted by sensor, just format
         err = dlp_nano_lib.format_scan_interpret(buffer_pointer,res_pointer)
         print("Format Scan interpret Error" + str(err))
-   
+
     return results
 
 def scan_Ref_interpret(refData, refMatrix, scanData):
@@ -175,7 +175,7 @@ def scan_Ref_interpret(refData, refMatrix, scanData):
 
     matrix_pointer = ctypes.pointer(matrix)
     matrix_size = ctypes.c_size_t(len(matrix))
-   
+
 
     ref_results = scanResults()
     ref_pointer = ctypes.byref(ref_results)
@@ -186,7 +186,7 @@ def scan_Ref_interpret(refData, refMatrix, scanData):
  res_ptr, ref_pointer)
 
     print("Ref interpret Error" + str(err))
-    
+
     return ref_results
 
 def set_config():
@@ -227,7 +227,7 @@ def set_config():
     err = dlp_nano_lib.dlpspec_get_scan_config_dump_size(config_ptr, BufSizeptr)
     print("Config size ERROR: " + str(err))
 
-    
+
     config_serial = ctypes.create_string_buffer(BufSize.value)
     config_serial_ptr = ctypes.pointer(config_serial)
     config_len = ctypes.c_size_t(len(config_serial))

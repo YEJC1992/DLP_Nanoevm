@@ -51,10 +51,10 @@ def scan():
     start_scan(0) # donot store in sd card
 
     results = get_results() # get scan results
-    
-    #ref_scan = get_ref_data() # get reference values
-    
-   
+
+    ref_scan = get_ref_data() # get reference values
+
+
 
     # Convert the results into a dataframe
 
@@ -63,7 +63,7 @@ def scan():
     df = df[(df[['wavelength','intensity']] != 0).all(axis=1)] # drop values of 0
     spectral_plot(df) # Plot wavelength vs intensity
     df.to_csv("spectral_data.csv")
-    
+
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)
@@ -74,5 +74,3 @@ l.grid()
 c.grid()
 s.grid()
 gui.mainloop()
-
-

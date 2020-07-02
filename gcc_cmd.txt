@@ -1,5 +1,5 @@
-gcc -c -DTPL_NOLIB -Wall -fpic dlpspec.c dlpspec_scan.c dlpspec_calib.c dlpspec_util.c tpl.c dlpspec_scan_col.c dlpspec_scan_had.c dlpspec_helper.c 
+gcc -c -DTPL_NOLIB -Wall -fpic dlpspec.c dlpspec_scan.c dlpspec_calib.c dlpspec_util.c tpl.c dlpspec_scan_col.c dlpspec_scan_had.c dlpspec_helper.c
 
-gcc -shared -o libtest.dylib dlpspec.o dlpspec_scan.o dlpspec_calib.o dlpspec_util.o tpl.o dlpspec_scan_had.o dlpspec_scan_col.o dlpspec_helper.o 
+gcc -shared -o libtest.dll dlpspec.o dlpspec_scan.o dlpspec_calib.o dlpspec_util.o tpl.o dlpspec_scan_had.o dlpspec_scan_col.o dlpspec_helper.o 
 
 rm *.o
