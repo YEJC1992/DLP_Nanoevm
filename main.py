@@ -38,7 +38,7 @@ def default_config():
 
 def spectral_plot(df):
 
-    df.plot(kind='scatter',x="wavelength",y="intensity")
+    df.plot(kind='line',x="wavelength",y="intensity")
     plt.title('NIR Spectra')
     plt.xlabel('Wavelength')
     plt.ylabel('Intensity')
@@ -52,13 +52,13 @@ def scan():
 
     results = get_results() # get scan results
 
-    #ref_scan = get_ref_data() # get reference values
+    ref_scan = get_ref_data() # get reference values
 
 
 
     # Convert the results into a dataframe
 
-    values = {"wavelength":results["wavelength"],"intensity":results["intensity"]}
+    values = {"wavelength":results["wavelength"],"intensity":results["intensity"],"ref":ref_scan["intensity"]}
     df = pd.DataFrame(values)
     df = df[(df[['wavelength','intensity']] != 0).all(axis=1)] # drop values of 0
     spectral_plot(df) # Plot wavelength vs intensity

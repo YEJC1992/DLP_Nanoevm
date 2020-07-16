@@ -134,7 +134,7 @@ def unpack_fields(input):
 
     return dict
 
-def scan_interpret(file,interpret):
+def scan_interpret(file,interpret,rawscandata=None):
 
     buffer0 =  ctypes.create_string_buffer(len(file))
 
@@ -155,8 +155,10 @@ def scan_interpret(file,interpret):
         print("Scan result interpret Error" + str(err))
     else:
         #raw data already interpreted by sensor, just format
-        err = dlp_nano_lib.format_scan_interpret(buffer_pointer,res_pointer)
+        finalres_ptr = ctypes.byref(rawscandata)
+        err = dlp_nano_lib.format_scan_interpret(buffer_pointer,finalres_ptr)
         print("Format Scan interpret Error" + str(err))
+        return rawscandata
 
     return results
 

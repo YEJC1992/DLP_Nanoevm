@@ -15,6 +15,7 @@ FILE = []
 h = 0
 scan_interpret_done = 0
 scanresults =scanResults()
+finalscanresults = scanResults()
 
 #Open Devices
 def setup(VID,PID):
@@ -204,15 +205,10 @@ def start_scan(store_in_sd):
 
     #Device Status
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
-    time.sleep(5) #scan every 3 sec
+    time.sleep(4) #scan every 4 sec
     send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
 
-    #Scan Interpret
-    send_info (CMD_STR_SINT[0], CMD_STR_SINT[1:8], CMD_STR_SINT[8])
 
-    while scan_interpret_done != 1:
-        send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
-    scan_interpret_done = 0
 
 
 #read scan data
@@ -230,13 +226,14 @@ def read_data(type):
 #convert scan raw data to python dict
 def get_results():
     global scanresults
+    global scan_interpret_done
 
-    scanData = read_data(8)   # 0: scan_data, 8: scan_interpret_data
+    scanData = read_data(0)   # 0: scan_data, 8: scan_interpret_data
 
     # Interpret Results
-    scanresults = scan_interpret(scanData,1)  # 0: interpret and format, 1: only format
+    scanresults = scan_interpret(scanData,0)  # 0: interpret and format, 1: only format
 
-    results = unpack_ref(scanresults)
+    results = unpack_fields(scanresults)
 
     f1 = open("scanResults.txt",'w')
     for key in results:
@@ -245,17 +242,37 @@ def get_results():
         f1.write("\n\n")
     f1.close()
 
+    #Scan Interpret
+    send_info (CMD_STR_SINT[0], CMD_STR_SINT[1:8], CMD_STR_SINT[8])
 
-    return results
+    while scan_interpret_done != 1:
+        send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
+    scan_interpret_done = 0
+
+    scanInterpretData = read_data(8)  # 8: scan_interpret_data
+    finalscanresults = scan_interpret(scanInterpretData,1,scanresults) # 1: only format
+
+    results1 = unpack_fields(finalscanresults)
+
+    f1 = open("finalscanResults.txt",'w')
+    for key in results1:
+        f1.write(key + " ")
+        f1.write(str(results1[key]))
+        f1.write("\n\n")
+    f1.close()
+
+
+    return results1
 
 #Get ref raw data
 def get_ref_data():
     global scanresults
+    global finalscanresults
     refData   = read_data(2)
     refMatrix = read_data(3)
 
 
-    scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
+    scan_ref = scan_Ref_interpret(refData,refMatrix,finalscanresults)
 
     ref_results = unpack_ref(scan_ref)
 
