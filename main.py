@@ -8,6 +8,7 @@ import tkinter as tk
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 VID = 0x0451
 PID = 0x4200
@@ -38,10 +39,10 @@ def default_config():
 
 def spectral_plot(df):
 
-    df.plot(kind='line',x="wavelength",y="intensity")
+    df.plot(kind='line',x="wavelength",y="absorption")
     plt.title('NIR Spectra')
     plt.xlabel('Wavelength')
-    plt.ylabel('Intensity')
+    plt.ylabel('Absorption')
     plt.show()
 
 def scan():
@@ -58,9 +59,11 @@ def scan():
 
     # Convert the results into a dataframe
 
-    values = {"wavelength":results["wavelength"],"intensity":results["intensity"],"ref":ref_scan["intensity"]}
+    values = {"wavelength":results["wavelength"],"intensity":results["intensity"],"reference":ref_scan["intensity"]}
     df = pd.DataFrame(values)
-    df = df[(df[['wavelength','intensity']] != 0).all(axis=1)] # drop values of 0
+    df = df[(df[['reference','intensity']] > 0).all(axis=1)] # drop values of 0
+    df['absorption'] = np.log10(df['reference']/df['intensity']) #need to get rid of negative values in ref?
+    df['reflectance'] =1/(np.exp(df['absorption']))  #check formula
     spectral_plot(df) # Plot wavelength vs intensity
     df.to_csv("spectral_data.csv")
 

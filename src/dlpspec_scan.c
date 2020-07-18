@@ -1230,7 +1230,7 @@ DLPSPEC_ERR_CODE dlpspec_scan_section_get_adc_data_range(const slewScanData
 
 DLPSPEC_ERR_CODE format_scan_interpret(void *pBuf, scanResults *pResults)
 {
-    int i, length;
+    int i=0,j=0, length;
     void *pBufAdd;
     if(pBuf != NULL)
     {
@@ -1239,15 +1239,19 @@ DLPSPEC_ERR_CODE format_scan_interpret(void *pBuf, scanResults *pResults)
         pBufAdd = (unsigned char *) pBuf + sizeof(int);
         pBuf = pBufAdd;
 
-        for(i = 0; i < length; i++)
+        for(i=0;i<length;i++)
         {
-            pResults->wavelength[i] = *((double *)pBuf);
-            pBufAdd = (unsigned char *) pBuf + sizeof(double);
-            pBuf = pBufAdd;
+            pResults->wavelength[j] = *((double *)pBuf);
 
-            pResults->intensity[i] = *((int *)pBuf);
-            pBufAdd = (unsigned char *) pBuf + sizeof(int);
-            pBuf = pBufAdd;
+						if(pResults->wavelength[j]>0){
+                pBufAdd = (unsigned char *) pBuf + sizeof(double);
+                pBuf = pBufAdd;
+
+                pResults->intensity[j] = *((int *)pBuf);
+                pBufAdd = (unsigned char *) pBuf + sizeof(int);
+                pBuf = pBufAdd;
+								j++;
+							}
         }
      }
 

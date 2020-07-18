@@ -156,9 +156,10 @@ def scan_interpret(file,interpret,rawscandata=None):
     else:
         #raw data already interpreted by sensor, just format
         finalres_ptr = ctypes.byref(rawscandata)
-        err = dlp_nano_lib.format_scan_interpret(buffer_pointer,finalres_ptr)
+        err = dlp_nano_lib.format_scan_interpret(buffer_pointer,res_pointer)
+        #err = dlp_nano_lib.format_scan_interpret(buffer_pointer,finalres_ptr)
         print("Format Scan interpret Error" + str(err))
-        return rawscandata
+        #return rawscandata
 
     return results
 

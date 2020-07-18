@@ -146,9 +146,13 @@ def read_burst_data(cmd_name,cmd,ret_len):
     return FILE
 
 
-
-
-
+def write_file(filename,data):
+    f1 = open(filename,'w')
+    for key in data:
+        f1.write(key + " ")
+        f1.write(str(data[key]))
+        f1.write("\n\n")
+    f1.close()
 
 
 #Get Version Numbers
@@ -235,12 +239,7 @@ def get_results():
 
     results = unpack_fields(scanresults)
 
-    f1 = open("scanResults.txt",'w')
-    for key in results:
-        f1.write(key + " ")
-        f1.write(str(results[key]))
-        f1.write("\n\n")
-    f1.close()
+    write_file("scanResults.txt",results) # write to text file
 
     #Scan Interpret
     send_info (CMD_STR_SINT[0], CMD_STR_SINT[1:8], CMD_STR_SINT[8])
@@ -252,36 +251,25 @@ def get_results():
     scanInterpretData = read_data(8)  # 8: scan_interpret_data
     finalscanresults = scan_interpret(scanInterpretData,1,scanresults) # 1: only format
 
-    results1 = unpack_fields(finalscanresults)
+    results1 = unpack_ref(finalscanresults)
 
-    f1 = open("finalscanResults.txt",'w')
-    for key in results1:
-        f1.write(key + " ")
-        f1.write(str(results1[key]))
-        f1.write("\n\n")
-    f1.close()
+    write_file("finalscanResults.txt",results1)
 
-
-    return results1
+    return results
 
 #Get ref raw data
 def get_ref_data():
-    global scanresults
     global finalscanresults
+    global scanresults
     refData   = read_data(2)
     refMatrix = read_data(3)
 
 
-    scan_ref = scan_Ref_interpret(refData,refMatrix,finalscanresults)
+    scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
 
     ref_results = unpack_ref(scan_ref)
 
-    f1 = open("refResults.txt",'w')
-    for key in ref_results:
-        f1.write(key + " ")
-        f1.write(str(ref_results[key]))
-        f1.write("\n\n")
-    f1.close()
+    write_file("refResults.txt",ref_results)
 
     return ref_results
 
