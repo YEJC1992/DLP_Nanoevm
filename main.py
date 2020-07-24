@@ -34,12 +34,12 @@ def custom_config():
     scan()
 
 def default_config():
-    set_active_config(0)
+    set_active_config(2)
     scan()
 
 def spectral_plot(df):
 
-    df.plot(kind='line',x="wavelength",y="absorption")
+    df.plot(kind='line',x="wavelength",y="reflectance")
     plt.title('NIR Spectra')
     plt.xlabel('Wavelength')
     plt.ylabel('Absorption')
@@ -63,7 +63,7 @@ def scan():
     df = pd.DataFrame(values)
     df = df[(df[['reference','intensity']] > 0).all(axis=1)] # drop values of 0
     df['absorption'] = np.log10(df['reference']/df['intensity']) #need to get rid of negative values in ref?
-    df['reflectance'] =1/(np.exp(df['absorption']))  #check formula
+    df['reflectance'] =1/(10**(df['absorption']))  #check formula
     spectral_plot(df) # Plot wavelength vs intensity
     df.to_csv("spectral_data.csv")
 

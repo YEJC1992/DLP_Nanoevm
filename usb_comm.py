@@ -16,6 +16,7 @@ h = 0
 scan_interpret_done = 0
 scanresults =scanResults()
 finalscanresults = scanResults()
+device_busy = 1
 
 #Open Devices
 def setup(VID,PID):
@@ -105,9 +106,12 @@ def read_data_process(rd_data,cmd_name):
         print("ACTIVE SCAN CONFIG: " + str(rd_data[0]) + "\n")
 
     elif cmd_name == cmd.DEV_STAT:
+        global device_busy
         stat = rd_data[0]
         print("Device Status: "+str(stat) + "\n")
-        return stat
+        if stat == 1:
+            device_busy = 0
+
 
     elif cmd_name == cmd.SCN_TIME:
         time = 0
@@ -195,12 +199,10 @@ def set_active_config(index):
 
 #Start the scan
 def start_scan(store_in_sd):
-    global scan_interpret_done
+    global device_busy
 
     #Scan Time
     send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])
-
-
 
     #Start Scan
     start_scan = CMD_STR_SCAN[1:8]
@@ -208,9 +210,9 @@ def start_scan(store_in_sd):
     send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])
 
     #Device Status
-    send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
-    time.sleep(4) #scan every 4 sec
-    send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
+    while device_busy != 0:
+        send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
+    device_busy = 1
 
 
 
@@ -240,7 +242,7 @@ def get_results():
     results = unpack_fields(scanresults)
 
     write_file("scanResults.txt",results) # write to text file
-
+    """
     #Scan Interpret
     send_info (CMD_STR_SINT[0], CMD_STR_SINT[1:8], CMD_STR_SINT[8])
 
@@ -253,7 +255,7 @@ def get_results():
 
     results1 = unpack_ref(finalscanresults)
 
-    write_file("finalscanResults.txt",results1)
+    write_file("finalscanResults.txt",results1)"""
 
     return results
 
