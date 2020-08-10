@@ -212,7 +212,7 @@ def set_config():
                 elif fname == "wavelength_end_nm":
                     value = 1700
                 elif fname == "width_px":
-                    value = 6
+                    value = 7
                 elif fname == "num_patterns":
                     value = 228
                 elif fname == "num_repeats":

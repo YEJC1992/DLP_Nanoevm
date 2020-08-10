@@ -8,6 +8,7 @@ import tkinter as tk
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 
 VID = 0x0451
 PID = 0x4200
@@ -38,31 +39,36 @@ def default_config():
 
 def spectral_plot(df):
 
-    df.plot(kind='scatter',x="wavelength",y="intensity")
+    df.plot(kind='line',x="wavelength",y="reflectance")
     plt.title('NIR Spectra')
     plt.xlabel('Wavelength')
-    plt.ylabel('Intensity')
+    plt.ylabel('Reflectance')
     plt.show()
 
 def scan():
 
+    
+
     get_scan_config_id()
+    
+    
 
     start_scan(0) # donot store in sd card
-
+    
     results = get_results() # get scan results
-    
-    #ref_scan = get_ref_data() # get reference values
-    
-   
+    ref_scan = get_ref_data() # get reference values
 
     # Convert the results into a dataframe
-
-    values = {"wavelength":results["wavelength"],"intensity":results["intensity"]}
+    
+    values = {"wavelength":results["wavelength"],"intensity":results["intensity"],"reference":ref_scan["intensity"]}
     df = pd.DataFrame(values)
-    df = df[(df[['wavelength','intensity']] != 0).all(axis=1)] # drop values of 0
-    spectral_plot(df) # Plot wavelength vs intensity
+    df = df[(df[['wavelength','intensity']] > 0).all(axis=1)].reset_index() # drop values of 0 or less
+    df['reflectance'] = df['intensity']/df['reference'] #reflectance = sample/reference
+    df['absorption'] = -(np.log10(df['reflectance']))#absorption = -log(reflectance)
+     
     df.to_csv("spectral_data.csv")
+    spectral_plot(df) # Plot wavelength vs intensity
+    
     
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)

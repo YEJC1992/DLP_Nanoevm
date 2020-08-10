@@ -14,6 +14,7 @@ READ_FILE_SIZE = 0
 FILE = []
 h = 0
 scan_interpret_done = 0
+device_busy = 1
 scanresults =scanResults()
 
 #Open Devices
@@ -24,8 +25,7 @@ def setup(VID,PID):
     print (device_list)
     h = hid.device()
     h.open(VID,PID)
-    #print("Product:  " + h.product +" Device:  " + h.manufacturer)
-    #print("Serial Number:  " + str(h.serial) + "\n")
+ 
     set_date()
     
 #Sends commands to device and waits for read data back from device
@@ -104,9 +104,10 @@ def read_data_process(rd_data,cmd_name):
         print("ACTIVE SCAN CONFIG: " + str(rd_data[0]) + "\n")
 
     elif cmd_name == cmd.DEV_STAT:
-        stat = rd_data[0]
-        print("Device Status: "+str(stat) + "\n")
-        return stat
+        global device_busy
+        print("Device Status: "+str(rd_data[0]) + "\n")
+        if rd_data[0] == 1:
+            device_busy = 0
 
     elif cmd_name == cmd.SCN_TIME:
         time = 0
@@ -117,16 +118,16 @@ def read_data_process(rd_data,cmd_name):
     elif cmd_name == cmd.INT_STAT:
         global scan_interpret_done
         scan_interpret_done = rd_data[0]
-        print("SCAN INTERPRET" +str(rd_data[0]))
+        print("Scan Interpret Done:" +str(rd_data[0])+"\n")
 
     elif cmd_name == cmd.TIV_VERS:
         for i in rd_data:
             print(hex(i)) 
 
 
-# Gets scan data
+# Gets scan/ref data
 def read_burst_data(cmd_name,cmd,ret_len):
-    
+   
     global FILE
     global h
     rfile = []
@@ -138,15 +139,24 @@ def read_burst_data(cmd_name,cmd,ret_len):
         while data:
             data = 0
             data = h.read(64,10)
-            extra.extend(data)
+            extra.extend(data)  
         process_data(extra[0:4],cmd_name)
-        rfile.extend(extra[4:])
+        rfile.extend(extra[4:516])  
     FILE = rfile
     return FILE
 
 
 
+#Write to file
 
+def write_to_file(fname,data):
+
+    f1 = open(fname,'w')
+    for key in data:
+        f1.write(key + " ")
+        f1.write(str(data[key]))
+        f1.write("\n\n")
+    f1.close()
 
 
 
@@ -191,29 +201,28 @@ def set_active_config(index):
 #Start the scan
 def start_scan(store_in_sd):
     global scan_interpret_done
+    global device_busy
 
     #Scan Time
-    send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])
-
-    
+    send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])   
 
     #Start Scan
     start_scan = CMD_STR_SCAN[1:8]
     start_scan.append(store_in_sd)
     send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])
 
-    #Device Status
-    send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])     
-    time.sleep(5) #scan every 3 sec
-    send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
+    #Device Status, wait until scan is done
+    while device_busy != 0:
+        send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
+        time.sleep(0.5) #check after 500msec
+    device_busy = 1
 
     #Scan Interpret
-    send_info (CMD_STR_SINT[0], CMD_STR_SINT[1:8], CMD_STR_SINT[8])
-    
     while scan_interpret_done != 1:
         send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
+        time.sleep(0.5) #check after 500msec
     scan_interpret_done = 0
-
+  
     
 #read scan data
 def read_data(type):
@@ -230,21 +239,19 @@ def read_data(type):
 #convert scan raw data to python dict
 def get_results():
     global scanresults
+   
      
-    scanData = read_data(8)   # 0: scan_data, 8: scan_interpret_data
-  
+    scanData = read_data(0)   # 0: scan_data, 8: scan_interpret_data
     # Interpret Results
-    scanresults = scan_interpret(scanData,1)  # 0: interpret and format, 1: only format
+    scanresults = scan_interpret(scanData,0)  # 0: interpret and format, 1: only format
+    results = unpack_fields(scanresults)
     
-    results = unpack_ref(scanresults)
+    
+    
+    #write results to txt file
+    write_to_file("scanResults.txt",results)
 
-    f1 = open("scanResults.txt",'w')
-    for key in results:
-        f1.write(key + " ")
-        f1.write(str(results[key]))
-        f1.write("\n\n")
-    f1.close()
-    
+   
     
     return results
 
@@ -254,18 +261,12 @@ def get_ref_data():
     refData   = read_data(2)
     refMatrix = read_data(3)
 
-  
+    #Interpret ref data
     scan_ref = scan_Ref_interpret(refData,refMatrix,scanresults)
-    
-    ref_results = unpack_ref(scan_ref)
-
-    f1 = open("refResults.txt",'w')
-    for key in ref_results:
-        f1.write(key + " ")
-        f1.write(str(ref_results[key]))
-        f1.write("\n\n")
-    f1.close()
-
+    #Unpack to python dict
+    ref_results = unpack_fields(scan_ref)
+    write_to_file("refResults.txt",ref_results)
+ 
     return ref_results
 
 
