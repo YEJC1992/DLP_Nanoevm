@@ -6,26 +6,26 @@ Installation Steps:
 
 1. Install python3, git, pandas,numpy and matplotlib on your linux machine
 
-#Install HIDAPI
+#Install HIDAPI from https://github.com/trezor/cython-hidapi.git
 
-2A.
-    $ sudo apt-get install python3-dev libusb-1.0-0-dev libudev-dev
-    $ sudo pip3 install --upgrade setuptools
-    $ sudo pip3 install hidapi
+2A.<br>
+    $ sudo apt-get install python3-dev libusb-1.0-0-dev libudev-dev <br>
+    $ sudo pip3 install --upgrade setuptools <br>
+    $ sudo pip3 install hidapi<br>
 
 
 OR
 
-2B. 
-    $ sudo apt-get install python3-dev libusb-1.0-0-dev libudev-dev
-    $ git clone https://github.com/trezor/cython-hidapi.git
-    $ cd cython-hidapi
-    Initialize hidapi submodule:
-    $ git submodule update --init
-    Build cython-hidapi extension module:
-    $ python setup.py build
-    Install cython-hidapi module into your Python distribution:
-    $ sudo python setup.py install
+2B.<br> 
+    $ sudo apt-get install python3-dev libusb-1.0-0-dev libudev-dev<br>
+    $ git clone https://github.com/trezor/cython-hidapi.git<br>
+    $ cd cython-hidapi<br>
+    Initialize hidapi submodule:<br>
+    $ git submodule update --init<br>
+    Build cython-hidapi extension module:<br>
+    $ python setup.py build <br>
+    Install cython-hidapi module into your Python distribution:<br>
+    $ sudo python setup.py install<br>
     
 #Get the code
 
