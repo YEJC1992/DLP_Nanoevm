@@ -36,6 +36,8 @@ class cmd(Enum):
     SET_TDAT = 23
     LMP_CTRL = 24
     DLP_PWUP = 25
+    SET_GAIN = 26
+    GET_GAIN = 27
 
 ################################################################################
 #Command Bytes :
@@ -60,12 +62,14 @@ CMD_TIV_VERS = [cmd.TIV_VERS, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x16, 0x
 CMD_STR_SCAN = [cmd.STR_SCAN, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x18, 0x02, 0+1]        # Start scan
 CMD_SCN_STAT = [cmd.SCN_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x19, 0x02, 1+4]        # Scan status-> 0:in progress
                                                                                                 #               1:complete
-CMD_CFG_APPY = [cmd.CFG_APPY, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x00, 0x00, 0x1E, 0x02, 4+1]
+CMD_SET_GAIN = [cmd.SET_GAIN, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x1B, 0x02, 0+1]        # Set PGA Gain
+CMD_CFG_APPY = [cmd.CFG_APPY, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x00, 0x00, 0x1E, 0x02, 4+1]        # Write custom config
 CMD_STR_CONF = [cmd.STR_CONF, USB_HDR, FLG_READ,  FLG_SEQ0, 0x04, 0x00, 0x20, 0x02, 95+4]       # Read stored scan configs
 CMD_NUM_CONF = [cmd.NUM_CONF, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x22, 0x02, 1+4]        # Read num of stored configs
 CMD_GET_SCON = [cmd.GET_SCON, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x23, 0x02, 1+4]        # Read active scan config
 CMD_SET_SCON = [cmd.SET_SCON, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x24, 0x02, 0+1]        # Set Active scan config
 CMD_LMP_CTRL = [cmd.LMP_CTRL, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x03, 0x00, 0x25, 0x02, 0+1]        # Keep lamp on after scan
+CMD_GET_GAIN = [cmd.GET_GAIN, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x28, 0x02, 1+4]        # Get PGA Gain
 
 CMD_SCN_TIME = [cmd.SCN_TIME, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x37, 0x02, 4+4]        # Get Scan time
 CMD_STR_SINT = [cmd.STR_SINT, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x02, 0x00, 0x39, 0x02, 0+1]        # Start scan interpret
@@ -76,6 +80,6 @@ CMD_INT_STAT = [cmd.INT_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x3A, 0x
 CMD_SET_TDAT = [cmd.SET_TDAT, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x09, 0x00, 0x09, 0x03, 0+1]        # set time and date
 CMD_GET_TDAT = [cmd.GET_TDAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x0C, 0x03, 7+4]        # Get time and date
 CMD_DEV_STAT = [cmd.DEV_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x03, 0x04, 4+4]        # Read device status
-CMD_ERR_STAT = [cmd.ERR_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x04, 0x04, 20+4]
-CMD_ERR_CLER = [cmd.ERR_CLER, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x02, 0x00, 0x05, 0x04, 0+1]
+CMD_ERR_STAT = [cmd.ERR_STAT, USB_HDR, FLG_READ,  FLG_SEQ0, 0x02, 0x00, 0x04, 0x04, 20+4]       # Get Error Status
+CMD_ERR_CLER = [cmd.ERR_CLER, USB_HDR, FLG_WRITE, FLG_SEQ0, 0x02, 0x00, 0x05, 0x04, 0+1]        # Clear Error Status
 

@@ -103,6 +103,9 @@ def read_data_process(rd_data,cmd_name):
     elif cmd_name == cmd.GET_SCON:
         print("ACTIVE SCAN CONFIG: " + str(rd_data[0]) + "\n")
 
+    elif cmd_name == cmd.GET_GAIN:
+        print("PGA GAIN SET AT: " + str(rd_data[0]) + "\n")
+
     elif cmd_name == cmd.DEV_STAT:
         global device_busy
         print("Device Status: "+str(rd_data[0]) + "\n")
@@ -121,8 +124,13 @@ def read_data_process(rd_data,cmd_name):
         print("Scan Interpret Done:" +str(rd_data[0])+"\n")
 
     elif cmd_name == cmd.TIV_VERS:
-        for i in rd_data:
-            print(hex(i)) 
+        print("Tiva SW version: " + str(rd_data[0:4])) 
+        print("DLPC SW version: " + str(rd_data[4:8]))
+        print("DLPC Flash version: " + str(rd_data[8:12]))
+        print("DLP Spectrum Library version: " + str(rd_data[12:16]))
+        print("EEPROM Calibration version: " + str(rd_data[16:20]))
+        print("EEPROM Reference version: " + str(rd_data[20:24]))
+        print("EEPROM Scan Configuration version: " + str(rd_data[24:28]))    
 
 
 # Gets scan/ref data
@@ -198,6 +206,16 @@ def set_active_config(index):
 
     send_info (CMD_GET_SCON[0], CMD_GET_SCON[1:8], CMD_GET_SCON[8])
 
+#Set PGA Gain
+def set_gain(pga_gain):
+
+    value =2**int(pga_gain)
+    set_pga_gain = CMD_SET_GAIN[1:8]
+    set_pga_gain.append(value)
+    send_info (CMD_SET_GAIN[0], set_pga_gain, CMD_SET_GAIN[8])
+
+    send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
+
 #Start the scan
 def start_scan(store_in_sd):
     global scan_interpret_done
@@ -271,14 +289,14 @@ def get_ref_data():
 
 
 #Set custom Scan Config
-def set_scan_config():
+def set_scan_config(scan_name,start,end,repeats,patterns):
 
-    serial_scan_config = set_config()
-
+    serial_scan_config = set_config(scan_name, int(start), int(end), int(repeats), int(patterns))
     buf_len = len(serial_scan_config)
     data = []
     data = CMD_CFG_APPY[1:8] 
     data[3] = buf_len + 2
+
 
     data.extend(serial_scan_config)
     send_info(CMD_CFG_APPY[0], data, CMD_CFG_APPY[8])

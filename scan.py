@@ -189,7 +189,7 @@ def scan_Ref_interpret(refData, refMatrix, scanData):
     
     return ref_results
 
-def set_config():
+def set_config(scan_name,start,end,repeats,patterns):
 
     config = scanConfig()
 
@@ -203,21 +203,22 @@ def set_config():
                 elif fname == "scanConfig_serial_number":
                     value = str.encode("6110022")
                 elif fname == "config_name":
-                    value = str.encode("Testing")
+                    value = str.encode(scan_name)
                 setattr(config.head,fname,value)
         if field_name == "stub":
             for fname, ftype in field_type._fields_:
                 if fname == "wavelength_start_nm":
-                    value = 900
+                    value = start
                 elif fname == "wavelength_end_nm":
-                    value = 1700
+                    value = end
                 elif fname == "width_px":
                     value = 7
                 elif fname == "num_patterns":
-                    value = 228
+                    value = patterns
                 elif fname == "num_repeats":
-                    value = 6
+                    value = repeats
                 setattr(config.stub,fname,value)
+  
 
     config_ptr = ctypes.byref(config)
 
