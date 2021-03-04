@@ -189,7 +189,7 @@ def scan_Ref_interpret(refData, refMatrix, scanData):
     
     return ref_results
 
-def set_config(scan_name,start,end,repeats,patterns):
+def set_config(scan_name,start,end,repeats,patterns,res):
 
     config = scanConfig()
 
@@ -212,7 +212,7 @@ def set_config(scan_name,start,end,repeats,patterns):
                 elif fname == "wavelength_end_nm":
                     value = end
                 elif fname == "width_px":
-                    value = 7
+                    value = res
                 elif fname == "num_patterns":
                     value = patterns
                 elif fname == "num_repeats":

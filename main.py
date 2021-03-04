@@ -37,7 +37,7 @@ def pga_gain():
 
 def custom_config():
 
-    set_scan_config(name.get(),start.get(),end.get(),repeat.get(), pattern.get())
+    set_scan_config(name.get(),start.get(),end.get(),repeat.get(), pattern.get(), res.get())
     scan()
 
 def default_config():
@@ -65,12 +65,12 @@ def scan():
     
     values = {"wavelength":results["wavelength"],"intensity":results["intensity"],"reference":ref_scan["intensity"]}
     df = pd.DataFrame(values)
-    df = df[(df[['wavelength','intensity']] > 0).all(axis=1)].reset_index() # drop values of 0 or less
-    df['reflectance'] = df['intensity']/df['reference'] #reflectance = sample/reference
+    df = df[0:results["length"]]
+    df.loc[df.intensity > 0, "reflectance"] = df['intensity']/df['reference'] #reflectance = sample/reference
     df['absorption'] = -(np.log10(df['reflectance']))#absorption = -log(reflectance)
      
     df.to_csv("spectral_data.csv")
-    spectral_plot(df) # Plot wavelength vs intensity
+    #spectral_plot(df) # Plot wavelength vs intensity
     
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)
@@ -120,6 +120,11 @@ pattern = tk.Entry(gui)
 canvas.create_window(300,200,window=pattern)
 labelp = tk.Label(gui,text="Num patterns:")
 canvas.create_window(100,200,window=labelp)
+
+res = tk.Entry(gui)
+canvas.create_window(300,220,window=res)
+labelre = tk.Label(gui,text="Resolution:")
+canvas.create_window(100,220,window=labelre)
 
 c.grid()
 

@@ -27,6 +27,8 @@ def setup(VID,PID):
     h.open(VID,PID)
  
     set_date()
+    get_sleep_mode()
+    set_sleep_mode(0)     # Turn off hibernation 
     
 #Sends commands to device and waits for read data back from device
 def send_info(cmd_name,cmd,ret_len):
@@ -82,7 +84,7 @@ def read_data_process(rd_data,cmd_name):
         READ_FILE_SIZE = size
         print("READ FILE SIZE: " + str(READ_FILE_SIZE) + "\n")
 
-    elif (cmd_name == cmd.CFG_APPY) or (cmd_name == cmd.ERR_STAT):
+    elif (cmd_name == cmd.CFG_APPY) or (cmd_name == cmd.ERR_STAT) or (cmd_name == cmd.GET_HIBM):
         for i in rd_data:
             print(hex(i))
 
@@ -186,6 +188,14 @@ def set_date():
 def get_date():
     send_info (CMD_GET_TDAT[0], CMD_GET_TDAT[1:8], CMD_GET_TDAT[8]) # Get time and date
 
+def get_sleep_mode():
+     send_info (CMD_GET_HIBM[0], CMD_GET_HIBM[1:8], CMD_GET_HIBM[8]) # Get sleep mode flag
+
+def set_sleep_mode(flag):
+     sleep_mode = CMD_SET_HIBM[1:8]
+     sleep_mode.append(flag)
+     send_info (CMD_SET_HIBM[0], sleep_mode, CMD_SET_HIBM[8])  # Set sleep mode flag
+
 #Start LED Test
 def led_test(start):
     led_start = CMD_LED_TEST[1:8]
@@ -209,9 +219,12 @@ def set_active_config(index):
 #Set PGA Gain
 def set_gain(pga_gain):
 
-    value =2**int(pga_gain)
+    isFixed =   1                   # isFixed during scan or not
+    gain_value = (2**int(pga_gain))
     set_pga_gain = CMD_SET_GAIN[1:8]
-    set_pga_gain.append(value)
+    set_pga_gain.append(isFixed)
+    set_pga_gain.append(gain_value)
+    print(set_pga_gain)
     send_info (CMD_SET_GAIN[0], set_pga_gain, CMD_SET_GAIN[8])
 
     send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
@@ -224,6 +237,7 @@ def start_scan(store_in_sd):
     #Scan Time
     send_info (CMD_SCN_TIME[0], CMD_SCN_TIME[1:8], CMD_SCN_TIME[8])   
 
+
     #Start Scan
     start_scan = CMD_STR_SCAN[1:8]
     start_scan.append(store_in_sd)
@@ -235,12 +249,14 @@ def start_scan(store_in_sd):
         time.sleep(0.5) #check after 500msec
     device_busy = 1
 
-    #Scan Interpret
+    send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
+""" #Scan Interpret
     while scan_interpret_done != 1:
         send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
         time.sleep(0.5) #check after 500msec
     scan_interpret_done = 0
-  
+"""
+    
     
 #read scan data
 def read_data(type):
@@ -262,14 +278,11 @@ def get_results():
     scanData = read_data(0)   # 0: scan_data, 8: scan_interpret_data
     # Interpret Results
     scanresults = scan_interpret(scanData,0)  # 0: interpret and format, 1: only format
-    results = unpack_fields(scanresults)
-    
+    results = unpack_fields(scanresults)  
     
     
     #write results to txt file
-    write_to_file("scanResults.txt",results)
-
-   
+    write_to_file("scanResults.txt",results) 
     
     return results
 
@@ -289,9 +302,9 @@ def get_ref_data():
 
 
 #Set custom Scan Config
-def set_scan_config(scan_name,start,end,repeats,patterns):
+def set_scan_config(scan_name,start,end,repeats,patterns,res):
 
-    serial_scan_config = set_config(scan_name, int(start), int(end), int(repeats), int(patterns))
+    serial_scan_config = set_config(scan_name, int(start), int(end), int(repeats), int(patterns), int(res))
     buf_len = len(serial_scan_config)
     data = []
     data = CMD_CFG_APPY[1:8] 
