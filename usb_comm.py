@@ -302,8 +302,9 @@ def get_ref_data():
 
 
 #Set custom Scan Config
-def set_scan_config(scan_name,start,end,repeats,patterns,res):
+def set_scan_config(scan_name,start,end,repeats,res):
 
+    patterns = (end - start)/res
     serial_scan_config = set_config(scan_name, int(start), int(end), int(repeats), int(patterns), int(res))
     buf_len = len(serial_scan_config)
     data = []

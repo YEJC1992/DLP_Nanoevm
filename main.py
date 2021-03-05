@@ -37,7 +37,7 @@ def pga_gain():
 
 def custom_config():
 
-    set_scan_config(name.get(),start.get(),end.get(),repeat.get(), pattern.get(), res.get())
+    set_scan_config(name.get(),start.get(),end.get(),repeat.get(), res.get())
     scan()
 
 def default_config():
@@ -116,15 +116,17 @@ canvas.create_window(300,180,window=repeat)
 labelr = tk.Label(gui,text="Num repeats:")
 canvas.create_window(100,180,window=labelr)
 
-pattern = tk.Entry(gui)
-canvas.create_window(300,200,window=pattern)
-labelp = tk.Label(gui,text="Num patterns:")
-canvas.create_window(100,200,window=labelp)
-
 res = tk.Entry(gui)
-canvas.create_window(300,220,window=res)
+canvas.create_window(300,200,window=res)
 labelre = tk.Label(gui,text="Resolution:")
-canvas.create_window(100,220,window=labelre)
+canvas.create_window(100,200,window=labelre)
+
+'''
+pattern = tk.Entry(gui)
+canvas.create_window(300,220,window=pattern)
+labelp = tk.Label(gui,text="Num patterns:")
+canvas.create_window(100,220,window=labelp)
+'''
 
 c.grid()
 
