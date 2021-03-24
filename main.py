@@ -10,7 +10,11 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import threading
+import RPi.GPIO as GPIO
+import sys
 
+SCAN_DONE = 0
 VID = 0x0451
 PID = 0x4200
 
@@ -20,6 +24,12 @@ gui.title('DLP Nanoevm GUI')
 
 setup(VID,PID)
 time.sleep(1)
+
+motor_channel = (29,31,33,35)
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
+
+GPIO.setup(motor_channel, GPIO.OUT)
 
 def led():
     led_test(1)   # Start Test
@@ -52,8 +62,7 @@ def spectral_plot(df):
     plt.ylabel('Reflectance')
     plt.show()
 
-def scan():
-
+def spectral_scan():
     get_scan_config_id()    
 
     start_scan(0) # donot store in sd card
@@ -71,7 +80,37 @@ def scan():
      
     df.to_csv("spectral_data.csv")
     #spectral_plot(df) # Plot wavelength vs intensity
+
+def motor_control():
+    global SCAN_DONE
+    print('motor running\n')
+
+    while SCAN_DONE == 0:
+        GPIO.output(motor_channel,(GPIO.HIGH,GPIO.LOW,GPIO.LOW,GPIO.HIGH))
+        sleep(0.02)
+        GPIO.output(motor_channel,(GPIO.HIGH,GPIO.HIGH,GPIO.LOW,GPIO.LOW))
+        sleep(0.02)
+        GPIO.output(motor_channel,(GPIO.LOW,GPIO.HIGH,GPIO.HIGH,GPIO.LOW))
+        sleep(0.02)
+        GPIO.output(motor_channel,(GPIO.LOW,GPIO.LOW,GPIO.HIGH,GPIO.HIGH))
+        sleep(0.02)
+
+
+def scan():
+    global SCAN_DONE
+
+    motor_start = threading.Thread(target=motor_control)
+    scan_start = threading.Thread(target=spectral_scan)
+
+    motor_start.start()
+    scan_start.start()
     
+
+    scan_start.join()
+    SCAN_DONE = 1
+    motor_start.join()
+
+
 
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)

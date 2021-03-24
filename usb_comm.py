@@ -224,7 +224,6 @@ def set_gain(pga_gain):
     set_pga_gain = CMD_SET_GAIN[1:8]
     set_pga_gain.append(isFixed)
     set_pga_gain.append(gain_value)
-    print(set_pga_gain)
     send_info (CMD_SET_GAIN[0], set_pga_gain, CMD_SET_GAIN[8])
 
     send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
@@ -248,14 +247,6 @@ def start_scan(store_in_sd):
         send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
         time.sleep(0.5) #check after 500msec
     device_busy = 1
-
-    send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
-""" #Scan Interpret
-    while scan_interpret_done != 1:
-        send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
-        time.sleep(0.5) #check after 500msec
-    scan_interpret_done = 0
-"""
     
     
 #read scan data
