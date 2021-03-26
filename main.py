@@ -22,39 +22,55 @@ gui = tk.Tk()
 
 gui.title('DLP Nanoevm GUI')
 
+# Setup NIR sensor
 setup(VID,PID)
-time.sleep(1)
+#time.sleep(0.5)
 
+# Setup i/o for motor control
 motor_channel = (29,31,33,35)
+homing_pos = 36
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 
 GPIO.setup(motor_channel, GPIO.OUT)
+GPIO.setup(homing_pos, GPIO.IN)
+
+''''''''''''''''''
+''' Functions '''
+''''''''''''''''''
 
 def led():
-    led_test(1)   # Start Test
-    time.sleep(3)
-    led_test(0)   # Stop Test
+    '''temp function for getting gpio input'''
+    #led_test(1)   # Start Test
+    #time.sleep(3)
+    #led_test(0)   # Stop Test
+    print(GPIO.input(homing_pos))
+
 
 def date():
     get_date()
 
+
 def ver():
     get_ver()
+
 
 def pga_gain():
     set_gain(gain.current())
 
-def custom_config():
 
+def custom_config():
     set_scan_config(name.get(),start.get(),end.get(),repeat.get(), res.get())
     scan()
+
 
 def default_config():
     set_active_config(0)
     scan()
 
+
 def spectral_plot(df):
+    # Plots the given spectral data frame
 
     df.plot(kind='line',x="wavelength",y="reflectance")
     plt.title('NIR Spectra')
@@ -62,26 +78,34 @@ def spectral_plot(df):
     plt.ylabel('Reflectance')
     plt.show()
 
+
 def spectral_scan():
     get_scan_config_id()    
 
-    start_scan(0) # donot store in sd card
+    start_scan(0) 			# donot store in sd card
     
-    results = get_results() # get scan results
-    ref_scan = get_ref_data() # get reference values
+    results = get_results() 		# get scan results
+    ref_scan = get_ref_data() 		# get reference values
 
-    # Convert the results into a dataframe
+
+    '''Convert the results into a dataframe'''
     
-    values = {"wavelength":results["wavelength"],"intensity":results["intensity"],"reference":ref_scan["intensity"]}
+    values = {"wavelength":results["wavelength"],
+              "intensity":results["intensity"],
+              "reference":ref_scan["intensity"]}
     df = pd.DataFrame(values)
     df = df[0:results["length"]]
+    
+    ''' Calculate Relectance and absorption'''
+
     df.loc[df.intensity > 0, "reflectance"] = df['intensity']/df['reference'] #reflectance = sample/reference
-    df['absorption'] = -(np.log10(df['reflectance']))#absorption = -log(reflectance)
+    df['absorption'] = -(np.log10(df['reflectance']))                         #absorption = -log(reflectance)
      
     df.to_csv("spectral_data.csv")
-    #spectral_plot(df) # Plot wavelength vs intensity
+
 
 def motor_control():
+
     global SCAN_DONE
     print('motor running\n')
 
