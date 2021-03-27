@@ -241,7 +241,8 @@ def start_scan(store_in_sd):
     start_scan = CMD_STR_SCAN[1:8]
     start_scan.append(store_in_sd)
     send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])
-
+   
+    time.sleep(1)  #Wait min time for scan
     #Device Status, wait until scan is done
     while device_busy != 0:
         send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])

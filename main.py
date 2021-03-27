@@ -24,7 +24,7 @@ gui.title('DLP Nanoevm GUI')
 
 # Setup NIR sensor
 setup(VID,PID)
-#time.sleep(0.5)
+time.sleep(1)
 
 # Setup i/o for motor control
 motor_channel = (29,31,33,35)
@@ -111,13 +111,13 @@ def motor_control():
 
     while SCAN_DONE == 0:
         GPIO.output(motor_channel,(GPIO.HIGH,GPIO.LOW,GPIO.LOW,GPIO.HIGH))
-        sleep(0.02)
+        time.sleep(0.005)
         GPIO.output(motor_channel,(GPIO.HIGH,GPIO.HIGH,GPIO.LOW,GPIO.LOW))
-        sleep(0.02)
+        time.sleep(0.005)
         GPIO.output(motor_channel,(GPIO.LOW,GPIO.HIGH,GPIO.HIGH,GPIO.LOW))
-        sleep(0.02)
+        time.sleep(0.005)
         GPIO.output(motor_channel,(GPIO.LOW,GPIO.LOW,GPIO.HIGH,GPIO.HIGH))
-        sleep(0.02)
+        time.sleep(0.005)
 
 
 def scan():
