@@ -243,12 +243,12 @@ def start_scan(store_in_sd):
     start_scan.append(store_in_sd)
     send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])
    
-    time.sleep(SCAN_TIME)  #Wait min time for scan
+    time.sleep(SCAN_TIME)  #Wait minimum time for scan to complete
 
     #Device Status, wait until scan is done
     while device_busy != 0:
         send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
-        time.sleep(0.5) #check after 500msec
+        time.sleep(0.05) #check after 50msec
 
     device_busy = 1  # Reset Status signals
     SCAN_TIME = 0
