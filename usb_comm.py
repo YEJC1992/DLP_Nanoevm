@@ -11,6 +11,7 @@ import datetime
 
 TIMEOUT = 1000
 READ_FILE_SIZE = 0
+SCAN_TIME = 0
 FILE = []
 h = 0
 scan_interpret_done = 0
@@ -115,10 +116,10 @@ def read_data_process(rd_data,cmd_name):
             device_busy = 0
 
     elif cmd_name == cmd.SCN_TIME:
-        time = 0
+        global SCAN_TIME
         for i in range(len(rd_data)):
-           time += rd_data[i] << (i*8)
-        print("SCAN_TIME: " + str(time)+ "\n")
+           SCAN_TIME += rd_data[i] << (i*8)
+        print("SCAN_TIME: " + str(SCAN_TIME)+ "\n")
 
     elif cmd_name == cmd.INT_STAT:
         global scan_interpret_done
@@ -224,7 +225,6 @@ def set_gain(pga_gain):
     set_pga_gain = CMD_SET_GAIN[1:8]
     set_pga_gain.append(isFixed)
     set_pga_gain.append(gain_value)
-    print(set_pga_gain)
     send_info (CMD_SET_GAIN[0], set_pga_gain, CMD_SET_GAIN[8])
 
     send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
@@ -242,21 +242,16 @@ def start_scan(store_in_sd):
     start_scan = CMD_STR_SCAN[1:8]
     start_scan.append(store_in_sd)
     send_info (CMD_STR_SCAN[0], start_scan, CMD_STR_SCAN[8])
+   
+    time.sleep(SCAN_TIME)  #Wait min time for scan
 
     #Device Status, wait until scan is done
     while device_busy != 0:
         send_info (CMD_DEV_STAT[0], CMD_DEV_STAT[1:8], CMD_DEV_STAT[8])
         time.sleep(0.5) #check after 500msec
-    device_busy = 1
 
-    send_info (CMD_GET_GAIN[0], CMD_GET_GAIN[1:8], CMD_GET_GAIN[8])
-""" #Scan Interpret
-    while scan_interpret_done != 1:
-        send_info (CMD_INT_STAT[0], CMD_INT_STAT[1:8], CMD_INT_STAT[8])
-        time.sleep(0.5) #check after 500msec
-    scan_interpret_done = 0
-"""
-    
+    device_busy = 1  # Reset Status signals
+    SCAN_TIME = 0
     
 #read scan data
 def read_data(type):
