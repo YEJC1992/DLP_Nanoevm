@@ -34,14 +34,14 @@ def run_motor():
     while count < 5:
         print('motor running forward\n')
         for step in range(0,200):
-            GPIO.output(motor_channel,half_step[pos])
+            GPIO.output(motor_channel,half_step_seq[pos])
             print(half_step[pos])
             pos = (pos + 1)  & len(half_step_seq)
             time.sleep(0.005)
 
         print('motor running backwards\n')
         for step in range(0,200):
-            GPIO.output(motor_channel,half_step[pos])
+            GPIO.output(motor_channel,half_step_seq[pos])
             print(half_step[pos])
             pos = (pos - 1)  & len(half_step_seq)
             time.sleep(0.005)
