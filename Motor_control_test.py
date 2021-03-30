@@ -20,12 +20,12 @@ pos = 0
 
 def setup():
     global pos
-
+    print('Finding homing position')
     while GPIO.input(homing_pos) == GPIO.LOW:
-        print('Finding homing position')
-        GPIO.output(motor_channel,half_step[pos])
+        GPIO.output(motor_channel,half_step_seq[pos])
         pos = (pos + 1) & len(half_step_seq)
         time.sleep(0.005)
+    print("homing pos @" + str(pos))
 
     
 def run_motor():
