@@ -3,32 +3,59 @@ import time
 import sys
 
 motor_channel = (29,31,33,35)
+homing_pos = 36
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 
 GPIO.setup(motor_channel, GPIO.OUT)
+GPIO.setup(homing_pos, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
 half_step_seq = [[1,0,0,0],[1,1,0,0],
                  [0,1,0,0],[0,1,1,0],
                  [0,0,1,0],[0,0,1,1],
                  [0,0,0,1],[1,0,0,1]]
 
+#Check for homing position
+pos = 0
 
+def setup():
+    global pos
+
+    while GPIO.input(homing_pos) == GPIO.LOW:
+        print('Finding homing position')
+        GPIO.output(motor_channel,half_step[pos])
+        pos = (pos + 1) & len(half_step_seq)
+        time.sleep(0.005)
+
+    
+def run_motor():
+    global pos
+    count = 0
+    while count < 5:
+        print('motor running forward\n')
+        for step in range(0,200):
+            GPIO.output(motor_channel,half_step[pos])
+            print(half_step[pos])
+            pos = (pos + 1)  & len(half_step_seq)
+            time.sleep(0.005)
+
+        print('motor running backwards\n')
+        for step in range(0,200):
+            GPIO.output(motor_channel,half_step[pos])
+            print(half_step[pos])
+            pos = (pos - 1)  & len(half_step_seq)
+            time.sleep(0.005)
+        count = count + 1
+
+setup()
 
 while True:
-    print('motor running forward\n')
-    for step in range(0,25):
-        for pos in range(0,8):
-            GPIO.output(motor_channel,half_step[pos])
-            print(half_step[pos])
-            time.sleep(0.005)
-
-    print('motor running backwards\n')
-    for step in range(0,25):
-        for pos in range(7,-1,-1):
-            GPIO.output(motor_channel,half_step[pos])
-            print(half_step[pos])
-            time.sleep(0.005)
+    key = input("Start(s) or End(e): ")
+    if (key == 's'):
+        run_motor()
+    elif(key == 'e'):
+        print('Motor stoppped')
+   
    
     
 	
