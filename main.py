@@ -14,39 +14,51 @@ import threading
 import RPi.GPIO as GPIO
 import sys
 
-SCAN_DONE = 0
-VID = 0x0451
-PID = 0x4200
-
 gui = tk.Tk()
 
 gui.title('DLP Nanoevm GUI')
 
+
+'''********************************************'''
+'''****************** Setup *******************'''
+'''********************************************'''
+
 # Setup NIR sensor
+
+SCAN_DONE = 0
+VID = 0x0451
+PID = 0x4200
+
 setup(VID,PID)
 time.sleep(1)
 
+
 # Setup i/o for motor control
+
+pos = 0
 motor_channel = (29,31,33,35)
 homing_pos = 36
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 
 GPIO.setup(motor_channel, GPIO.OUT)
-GPIO.setup(homing_pos, GPIO.IN)
+GPIO.setup(homing_pos, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
-''''''''''''''''''
-''' Functions '''
-''''''''''''''''''
+half_step_seq = [[1,0,0,0],[1,1,0,0],
+                 [0,1,0,0],[0,1,1,0],
+                 [0,0,1,0],[0,0,1,1],
+                 [0,0,0,1],[1,0,0,1]]
+
+setup_motor()
+
+'''********************************************'''
+'''**************** Functions *****************'''
+'''********************************************'''
 
 def led():
     led_test(1)   # Start Test
     time.sleep(3)
     led_test(0)   # Stop Test
-
-def get_homing_pos():
-    print(GPIO.input(homing_pos))
-
 
 def date():
     get_date()
@@ -105,20 +117,39 @@ def spectral_scan():
     df.to_csv("spectral_data.csv")
 
 
+def setup_motor():
+    global pos
+    print('Finding homing position')
+    while GPIO.input(homing_pos) == GPIO.LOW:
+        GPIO.output(motor_channel,half_step_seq[pos])
+        pos = (pos + 1) & len(half_step_seq)
+        time.sleep(0.005)
+    print("homing pos @" + str(pos))
+
 def motor_control():
 
     global SCAN_DONE
-    print('motor running\n')
-
+    global pos
+   
     while SCAN_DONE == 0:
-        GPIO.output(motor_channel,(GPIO.HIGH,GPIO.LOW,GPIO.LOW,GPIO.HIGH))
-        time.sleep(0.005)
-        GPIO.output(motor_channel,(GPIO.HIGH,GPIO.HIGH,GPIO.LOW,GPIO.LOW))
-        time.sleep(0.005)
-        GPIO.output(motor_channel,(GPIO.LOW,GPIO.HIGH,GPIO.HIGH,GPIO.LOW))
-        time.sleep(0.005)
-        GPIO.output(motor_channel,(GPIO.LOW,GPIO.LOW,GPIO.HIGH,GPIO.HIGH))
-        time.sleep(0.005)
+        print('motor running forward\n')
+        for step in range(0,200):
+            GPIO.output(motor_channel,half_step_seq[pos])
+            #print(half_step_seq[pos])
+            pos = (pos + 1) 
+            if pos == 8:
+                pos = 0
+            time.sleep(0.005)
+
+        print('motor running backwards\n')
+        for step in range(0,200):
+            GPIO.output(motor_channel,half_step_seq[pos])
+            #print(half_step_seq[pos])
+            pos = (pos - 1) 
+            if pos == -1:
+                pos = 7
+            time.sleep(0.005)
+  
 
 
 def scan():
@@ -137,7 +168,11 @@ def scan():
     SCAN_DONE = 0
 
 
-h = tk.Button(gui, text='Get Homing Position', width=20, command=get_homing_pos)
+'''********************************************'''
+'''**************** GUI Setup *****************'''
+'''********************************************'''
+
+
 d = tk.Button(gui, text='Get Date', width=20, command=date)
 l = tk.Button(gui, text='LED Test', width=20, command=led)
 v = tk.Button(gui, text='Get Version', width=20, command=ver)
@@ -146,7 +181,7 @@ c = tk.Button(gui, text='Custom Config scan', width=20, command=custom_config)
 
 
 
-h.grid()
+
 d.grid()
 l.grid()
 v.grid()
